@@ -1,0 +1,4 @@
+name: huebox
+image: gijs6/huebox
+registry: ghcr.io
+host: dec
