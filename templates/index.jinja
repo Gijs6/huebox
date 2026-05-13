@@ -1,0 +1,17 @@
+{% extends "skeleton.jinja" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <article class="palette">
+        {% for palette in palettes %}
+            <h2>{{ palette.name }}</h2>
+
+            <ul class="palette__colors">
+                {% for color in palette.colors %}<li class="color" style="--color: {{ color.hex_value }}">{{ color.hex_value }}</li>{% endfor %}
+            </ul>
+        {% endfor %}
+    </article>
+
+    <a href="{{ url_for('new') }}" class="button">New <i class="fa-solid fa-plus"></i></a>
+{% endblock %}

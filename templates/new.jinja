@@ -1,0 +1,35 @@
+{% extends "skeleton.jinja" %}
+
+{% block title %}New palette{% endblock %}
+
+{% block content %}
+    <ul class="palette__colors">
+    </ul>
+
+    <button id="addColorBtn">
+        Add color <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <script>
+        const button = document.getElementById("addColorBtn");
+        const list = document.querySelector(".palette__colors");
+
+        function getRandomColor() {
+            return "#" + Math.floor(Math.random() * 16777215)
+                .toString(16)
+                .padStart(6, "0");
+        }
+
+        button.addEventListener("click", () => {
+            const li = document.createElement("li");
+            li.classList.add("color");
+
+            const color = getRandomColor();
+
+            li.textContent = color;
+            li.style.setProperty("--color", color);
+
+            list.appendChild(li);
+        });
+    </script>
+{% endblock %}
