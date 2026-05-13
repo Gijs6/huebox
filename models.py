@@ -1,0 +1,35 @@
+from flask_sqlalchemy import SQLAlchemy
+
+import secrets
+import string
+from datetime import datetime
+
+
+def generate_id(length=5):
+    chars = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(chars) for _ in range(length))
+
+
+db = SQLAlchemy()
+
+
+class Palette(db.Model):
+    id = db.Column(db.String(5), primary_key=True, default=generate_id)
+
+    name = db.Column(db.String(100), nullable=False)
+
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    colors = db.relationship(
+        "Color", backref="palette", cascade="all, delete-orphan", lazy=True
+    )
+
+
+class Color(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    palette_id = db.Column(db.String(5), db.ForeignKey("palette.id"), nullable=False)
+
+    hex_value = db.Column(db.String(7), nullable=False)
+
+    position = db.Column(db.Integer, nullable=False)
