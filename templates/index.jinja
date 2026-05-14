@@ -3,9 +3,11 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-    <article class="palette">
+    <article class="palette palette--small">
         {% for palette in palettes %}
-            <h2>{{ palette.name }}</h2>
+            <h2>
+                <a href="{{ url_for('palette', id=palette.id) }}">{{ palette.name }}</a>
+            </h2>
 
             <ul class="palette__colors">
                 {% for color in palette.colors %}<li class="color" style="--color: {{ color.hex_value }}">{{ color.hex_value }}</li>{% endfor %}

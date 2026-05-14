@@ -1,0 +1,96 @@
+{% extends "skeleton.jinja" %}
+
+{% block title %}
+    {%- if palette -%}
+        Editing {{ palette.name }}
+    {%- else -%}
+        New palette
+    {%- endif -%}
+{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        <article class="palette palette--big">
+            <input type="text"
+                   name="name"
+                   placeholder="Palette name"
+                   {% if palette %}value="{{ palette.name }}"{% endif %}
+                   required>
+
+            <ul class="palette__colors" id="colorList">
+                {% if palette %}
+                    {% for color in palette.colors %}
+                        <li class="color" style="--color: {{ color.hex_value }}">
+                            <input type="color" name="colors" value="{{ color.hex_value }}" class="color__picker">
+                            <span class="color__hex">{{ color.hex_value }}</span>
+                            <button type="button" class="color__remove" aria-label="Remove color">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        </article>
+
+        <button type="button" id="addColorBtn">
+            Add color <i class="fa-solid fa-plus"></i>
+        </button>
+
+        <button type="submit">Save palette</button>
+    </form>
+
+    <script>
+        const addBtn = document.getElementById("addColorBtn");
+        const list = document.getElementById("colorList");
+
+        function getRandomColor() {
+            return "#" + Math.floor(Math.random() * 16777215)
+                .toString(16)
+                .padStart(6, "0");
+        }
+
+        function wireColorItem(li) {
+            const picker = li.querySelector(".color__picker");
+            const hexSpan = li.querySelector(".color__hex");
+            const removeBtn = li.querySelector(".color__remove");
+
+            picker.addEventListener("input", () => {
+                li.style.setProperty("--color", picker.value);
+                hexSpan.textContent = picker.value;
+            });
+
+            removeBtn.addEventListener("click", () => li.remove());
+        }
+
+        list.querySelectorAll(".color").forEach(wireColorItem);
+
+        addBtn.addEventListener("click", () => {
+            const hex = getRandomColor();
+
+            const li = document.createElement("li");
+            li.classList.add("color");
+            li.style.setProperty("--color", hex);
+
+            const picker = document.createElement("input");
+            picker.type = "color";
+            picker.name = "colors";
+            picker.value = hex;
+            picker.classList.add("color__picker");
+
+            const hexSpan = document.createElement("span");
+            hexSpan.classList.add("color__hex");
+            hexSpan.textContent = hex;
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.classList.add("color__remove");
+            removeBtn.setAttribute("aria-label", "Remove color");
+            removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+            li.append(picker, hexSpan, removeBtn);
+            list.appendChild(li);
+            wireColorItem(li);
+        });
+    </script>
+
+{% endblock %}

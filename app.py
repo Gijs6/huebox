@@ -37,7 +37,7 @@ def index():
 
 @app.get("/new")
 def new():
-    return render_template("new.jinja")
+    return render_template("edit.jinja")
 
 
 @app.post("/new")
@@ -61,7 +61,37 @@ def submit_new():
 
     db.session.commit()
 
-    return redirect(url_for("index"))
+    return redirect(url_for("palette", id=palette.id))
+
+
+@app.get("/palette/<id>")
+def palette(id):
+    palette = Palette.query.get(id)
+
+    return render_template("edit.jinja", palette=palette)
+
+
+@app.post("/palette/<id>")
+def submit_palette(id):
+    palette = Palette.query.get_or_404(id)
+
+    palette.name = request.form.get("name")
+    colors = request.form.getlist("colors")
+
+    Color.query.filter_by(palette_id=palette.id).delete()
+
+    for index, hex_value in enumerate(colors):
+        color = Color(
+            palette_id=palette.id,
+            hex_value=hex_value,
+            position=index,
+        )
+
+        db.session.add(color)
+
+    db.session.commit()
+
+    return redirect(url_for("palette", id=palette.id))
 
 
 if __name__ == "__main__":
