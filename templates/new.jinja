@@ -3,12 +3,18 @@
 {% block title %}New palette{% endblock %}
 
 {% block content %}
-    <ul class="palette__colors">
-    </ul>
+    <form method="POST">
+        <input type="text" name="name" placeholder="Palette name" required>
 
-    <button id="addColorBtn">
-        Add color <i class="fa-solid fa-plus"></i>
-    </button>
+        <ul class="palette__colors">
+        </ul>
+
+        <button type="button" id="addColorBtn">
+            Add color <i class="fa-solid fa-plus"></i>
+        </button>
+
+        <button type="submit">Save palette</button>
+    </form>
 
     <script>
         const button = document.getElementById("addColorBtn");
@@ -29,7 +35,15 @@
             li.textContent = color;
             li.style.setProperty("--color", color);
 
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "colors";
+            input.value = color;
+
+            li.appendChild(input);
+
             list.appendChild(li);
         });
     </script>
+
 {% endblock %}
