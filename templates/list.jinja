@@ -1,0 +1,35 @@
+{% extends "base.jinja" %}
+
+{% block title %}Palettes{% endblock %}
+
+{% block main %}
+    <div class="page-header">
+        <h1 class="page-header__title">Your palettes</h1>
+        <a href="{{ url_for('new') }}" class="btn">
+            New <i class="fa-solid fa-plus"></i>
+        </a>
+    </div>
+
+    {% if palettes %}
+        <div class="palette-grid">
+            {% for p in palettes %}
+                <a href="{{ url_for('palette', id=p.id) }}" class="palette-card">
+                    <div class="palette-card__strip">
+                        {% for color in p.colors %}<div class="palette-card__swatch" style="--color: {{ color.hex_value }}"></div>{% endfor %}
+                    </div>
+                    <div class="palette-card__body">
+                        <span class="palette-card__name">{{ p.name }}</span>
+                        <div class="palette-card__meta">
+                            <span>{{ p.colors | length }} color{{ 's' if p.colors | length != 1 }}</span>
+                            {% if p.is_public %}<span class="palette-card__badge">public</span>{% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">
+            No palettes yet. <a href="{{ url_for('new') }}">Create your first one.</a>
+        </p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.jinja" %}
+
+{% block title %}Explore{% endblock %}
+
+{% block main %}
+    <div class="page-header">
+        <h1 class="page-header__title">Explore</h1>
+        {% if palettes %}<span class="page-header__count">{{ palettes | length }} palette{{ 's' if palettes | length != 1 }}</span>{% endif %}
+    </div>
+
+    {% if palettes %}
+        <div class="palette-grid">
+            {% for p in palettes %}
+                <article class="palette-card">
+                    <div class="palette-card__strip">
+                        {% for color in p.colors %}<div class="palette-card__swatch" style="--color: {{ color.hex_value }}"></div>{% endfor %}
+                    </div>
+                    <div class="palette-card__body">
+                        <span class="palette-card__name">{{ p.name }}</span>
+                        <div class="palette-card__meta">
+                            <span class="palette-card__author">
+                                {% if p.owner.avatar_url %}
+                                    <img src="{{ p.owner.avatar_url }}"
+                                         alt="{{ p.owner.login }}"
+                                         class="palette-card__avatar">
+                                {% endif %}
+                                {{ p.owner.login }}
+                            </span>
+                            <span>{{ p.colors | length }} color{{ 's' if p.colors | length != 1 }}</span>
+                        </div>
+
+                        {% if current_user %}
+                            {% if current_user.id != p.user_id %}
+                                <form method="POST"
+                                      action="{{ url_for('fork_palette', id=p.id) }}"
+                                      class="palette-card__fork">
+                                    <button type="submit" class="btn btn--ghost btn--sm">Fork</button>
+                                </form>
+                            {% else %}
+                                <div class="palette-card__fork">
+                                    <a href="{{ url_for('palette', id=p.id) }}"
+                                       class="btn btn--ghost btn--sm">Edit</a>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">
+            No public palettes yet.
+            {% if current_user %}
+                Make one of your palettes public to be featured here.
+            {% else %}
+                <a href="{{ url_for('login') }}">Sign in</a> to create palettes.
+            {% endif %}
+        </p>
+    {% endif %}
+{% endblock %}

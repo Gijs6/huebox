@@ -1,19 +1,120 @@
 {% extends "skeleton.jinja" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Huebox{% endblock %}
 
 {% block content %}
-    <article class="palette palette--small">
-        {% for palette in palettes %}
-            <h2>
-                <a href="{{ url_for('palette', id=palette.id) }}">{{ palette.name }}</a>
-            </h2>
+    <div class="splash">
+        <canvas class="splash__canvas" id="splashCanvas"></canvas>
 
-            <ul class="palette__colors">
-                {% for color in palette.colors %}<li class="color" style="--color: {{ color.hex_value }}">{{ color.hex_value }}</li>{% endfor %}
-            </ul>
-        {% endfor %}
-    </article>
+        <div class="splash__center">
+            <h1 class="splash__title">Huebox</h1>
+            <p class="splash__sub">A minimal color palette manager.</p>
+            <div class="splash__actions">
+                {% if current_user %}
+                    <a href="{{ url_for('list') }}" class="btn btn--lg">My palettes →</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn--lg">
+                        <i class="fa-brands fa-github"></i> Sign in with GitHub
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('explore') }}" class="btn btn--lg btn--ghost">Explore</a>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ url_for('new') }}" class="button">New <i class="fa-solid fa-plus"></i></a>
+    <script>
+        const canvas = document.getElementById("splashCanvas");
+        const ctx = canvas.getContext("2d");
+        let ribbons = [];
+
+        const palettes = [
+            ["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51"],
+            ["#03045e", "#0077b6", "#0096c7", "#00b4d8", "#48cae4", "#90e0ef"],
+            ["#74c69d", "#52b788", "#40916c", "#2d6a4f", "#1b4332", "#081c15"],
+            ["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"],
+            ["#f72585", "#7209b7", "#3a0ca3", "#4361ee", "#4cc9f0"],
+            ["#606c38", "#283618", "#dda15e", "#bc6c25"],
+            ["#cdb4db", "#ffc8dd", "#ffafcc", "#bde0fe", "#a2d2ff"],
+            ["#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00", "#ca6702"],
+            ["#7400b8", "#6930c3", "#5390d9", "#48bfe3", "#64dfdf", "#80ffdb"],
+            ["#d9ed92", "#99d98c", "#52b69a", "#168aad", "#1e6091", "#184e77"],
+            ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93"],
+            ["#f94144", "#f3722c", "#f9c74f", "#90be6d", "#43aa8b", "#277da1"],
+            ["#e63946", "#457b9d", "#1d3557", "#f1faee"],
+            ["#ff6b6b", "#feca57", "#48dbfb", "#ff9ff3", "#54a0ff"],
+            ["#a8dadc", "#457b9d", "#1d3557", "#e63946"],
+            ["#2d00f7", "#6a00f4", "#8900f2", "#bc00dd", "#d100d1", "#e500a4"],
+            ["#d4a373", "#ccd5ae", "#e9edc9", "#fefae0", "#faedcd"],
+            ["#780000", "#c1121f", "#fdf0d5", "#003049", "#669bbc"],
+            ["#f8edeb", "#f9dcc4", "#fec89a", "#ffd7ba", "#ffb5a7"],
+            ["#355070", "#6d597a", "#b56576", "#e56b6f", "#eaac8b"],
+        ];
+
+        function makeRibbon(initial = false) {
+            const palette = palettes[Math.floor(Math.random() * palettes.length)];
+            const swatchW = 28 + Math.random() * 58;
+            const swatchH = 12 + Math.random() * 38;
+            const gap = 2;
+            const totalW = palette.length * (swatchW + gap);
+
+            return {
+                palette,
+                swatchW,
+                swatchH,
+                gap,
+                totalW,
+                angle: 0,
+                speed: 0.22 + Math.random() * 0.52,
+                alpha: 0.18 + Math.random() * 0.72,
+                y: Math.random() * canvas.height,
+                x: initial ?
+                    Math.random() * (canvas.width + totalW) - totalW : -totalW - 10,
+            };
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function init() {
+            resize();
+            ribbons = Array.from({
+                length: 26
+            }, () => makeRibbon(true));
+        }
+
+        function frame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (const r of ribbons) {
+                ctx.save();
+                ctx.globalAlpha = r.alpha;
+                ctx.translate(r.x, r.y);
+                ctx.rotate(r.angle);
+
+                r.palette.forEach((color, i) => {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(i * (r.swatchW + r.gap), 0, r.swatchW, r.swatchH);
+                });
+
+                ctx.restore();
+                r.x += r.speed;
+
+                if (r.x > canvas.width + r.totalW + 50) {
+                    Object.assign(r, makeRibbon(false));
+                }
+            }
+
+            requestAnimationFrame(frame);
+        }
+
+        window.addEventListener("resize", () => {
+            resize();
+            for (const r of ribbons) r.y = Math.random() * canvas.height;
+        });
+
+        init();
+        frame();
+    </script>
 {% endblock %}
