@@ -39,6 +39,13 @@ class Palette(db.Model):
         lazy=True,
         order_by="Color.position",
     )
+    likes = db.relationship(
+        "Like", backref="palette_obj", cascade="all, delete-orphan", lazy=True
+    )
+
+    @property
+    def like_count(self):
+        return len(self.likes)
 
 
 class Color(db.Model):
@@ -46,3 +53,9 @@ class Color(db.Model):
     palette_id = db.Column(db.String(5), db.ForeignKey("palette.id"), nullable=False)
     hex_value = db.Column(db.String(7), nullable=False)
     position = db.Column(db.Integer, nullable=False)
+
+
+class Like(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    palette_id = db.Column(db.String(5), db.ForeignKey("palette.id"), primary_key=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)

@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from models import db, User, Palette, Color
+from models import db, User, Palette, Color, Like
 
 load_dotenv(override=True)
 
@@ -60,7 +60,7 @@ with app.app_context():
 
 @app.before_request
 def auto_login_in_debug():
-    if not app.debug or "user_id" in session:
+    if not app.debug or "user_id" in session or session.get("dev_logged_out"):
         return
     dev_user = User.query.filter_by(github_id=0).first()
     if dev_user is None:
@@ -94,6 +94,9 @@ def inject_user():
 
 @app.get("/login")
 def login():
+    if app.debug:
+        session.pop("dev_logged_out", None)
+        return redirect(url_for("list"))
     callback = url_for("auth_callback", _external=True)
     return github.authorize_redirect(callback)
 
@@ -124,6 +127,8 @@ def auth_callback():
 @app.get("/logout")
 def logout():
     session.clear()
+    if app.debug:
+        session["dev_logged_out"] = True
     return redirect(url_for("index"))
 
 
@@ -142,7 +147,21 @@ def explore():
         .limit(200)
         .all()
     )
-    return render_template("explore.jinja", palettes=palettes)
+    user = current_user()
+    liked_ids = set()
+    if user:
+        liked_ids = {l.palette_id for l in Like.query.filter_by(user_id=user.id).all()}
+    return render_template("explore.jinja", palettes=palettes, liked_ids=liked_ids)
+
+
+@app.get("/p/<id>")
+def view_palette(id):
+    p = Palette.query.filter_by(id=id, is_public=True).first_or_404()
+    user = current_user()
+    user_liked = bool(
+        user and Like.query.filter_by(user_id=user.id, palette_id=id).first()
+    )
+    return render_template("view.jinja", palette=p, user_liked=user_liked)
 
 
 @app.get("/list")
@@ -262,6 +281,50 @@ def fork_palette(id):
     db.session.commit()
     flash(f'Forked "{source.name}" to your palettes.', "success")
     return redirect(url_for("palette", id=fork.id))
+
+
+@app.post("/palette/<id>/like")
+@login_required
+def toggle_like(id):
+    p = Palette.query.filter_by(id=id, is_public=True).first_or_404()
+    user = current_user()
+    existing = Like.query.filter_by(user_id=user.id, palette_id=id).first()
+    if existing:
+        db.session.delete(existing)
+    else:
+        db.session.add(Like(user_id=user.id, palette_id=id))
+    db.session.commit()
+    return redirect(request.referrer or url_for("view_palette", id=id))
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template(
+        "error.jinja",
+        code=404,
+        title="Not Found",
+        description="The page you're looking for doesn't exist.",
+    ), 404
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template(
+        "error.jinja",
+        code=403,
+        title="Forbidden",
+        description="You don't have permission to view this page.",
+    ), 403
+
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template(
+        "error.jinja",
+        code=500,
+        title="Server Error",
+        description="Something went wrong on our end. Please try again later.",
+    ), 500
 
 
 if __name__ == "__main__":
