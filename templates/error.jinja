@@ -1,0 +1,12 @@
+{% extends "base.jinja" %}
+
+{% block title %}{{ code }} {{ title }}{% endblock %}
+
+{% block main %}
+    <div class="error-page">
+        <span class="error-page__code">{{ code }}</span>
+        <h1 class="error-page__title">{{ title }}</h1>
+        <p class="error-page__desc">{{ description }}</p>
+        <a href="{{ url_for('index') }}" class="btn">Go home</a>
+    </div>
+{% endblock %}
