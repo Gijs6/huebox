@@ -39,31 +39,6 @@
     </head>
 
     <body>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="flash-list">
-                    {% for category, message in messages %}
-                        <li class="flash is-{{ category }}">
-                            {% if category == 'success' %}
-                                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                            {% elif category == 'error' %}
-                                <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
-                            {% elif category == 'info' %}
-                                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                            {% endif %}
-                            {{ message }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-
-        <header>
-            <a href="{{ url_for('index') }}">Huebox</a>
-        </header>
-
-        <main>
-            {% block content %}{% endblock %}
-        </main>
+        {% block content %}{% endblock %}
     </body>
 </html>
