@@ -95,7 +95,18 @@
                 await navigator.clipboard.writeText(text);
                 return true;
             } catch {
-                return false;
+                try {
+                    const ta = document.createElement("textarea");
+                    ta.value = text;
+                    ta.style.cssText = "position:fixed;opacity:0";
+                    document.body.appendChild(ta);
+                    ta.select();
+                    const ok = document.execCommand("copy");
+                    document.body.removeChild(ta);
+                    return ok;
+                } catch {
+                    return false;
+                }
             }
         }
 
@@ -264,7 +275,7 @@
 
         document.querySelectorAll(".palette-view__chip, .palette-view__hex").forEach(el => {
             el.addEventListener("click", async () => {
-                if (await copyText(el.dataset.hex)) showToast(el.dataset.hex);
+                if (await copyText(el.dataset.hex)) showToast("Copied " + el.dataset.hex);
             });
         });
 
