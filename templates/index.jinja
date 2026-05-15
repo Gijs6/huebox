@@ -26,6 +26,7 @@
         const canvas = document.getElementById("splashCanvas");
         const ctx = canvas.getContext("2d");
         let ribbons = [];
+        const mouse = { x: -9999, y: -9999 };
 
         const palettes = [
             ["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51"],
@@ -88,14 +89,23 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (const r of ribbons) {
+                const cx = r.x + r.totalW / 2;
+                const cy = r.y + r.swatchH / 2;
+                const dx = mouse.x - cx;
+                const dy = mouse.y - cy;
+                const dist = Math.hypot(dx, dy);
+                const influence = Math.max(0, 1 - dist / 500);
+                const targetAngle = Math.atan2(dy, dx) * influence * 0.25;
+                r.angle += (targetAngle - r.angle) * 0.06;
+
                 ctx.save();
                 ctx.globalAlpha = r.alpha;
-                ctx.translate(r.x, r.y);
+                ctx.translate(cx, cy);
                 ctx.rotate(r.angle);
 
                 r.palette.forEach((color, i) => {
                     ctx.fillStyle = color;
-                    ctx.fillRect(i * (r.swatchW + r.gap), 0, r.swatchW, r.swatchH);
+                    ctx.fillRect(i * (r.swatchW + r.gap) - r.totalW / 2, -r.swatchH / 2, r.swatchW, r.swatchH);
                 });
 
                 ctx.restore();
@@ -108,6 +118,9 @@
 
             requestAnimationFrame(frame);
         }
+
+        window.addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener("mouseleave", () => { mouse.x = -9999; mouse.y = -9999; });
 
         window.addEventListener("resize", () => {
             resize();
