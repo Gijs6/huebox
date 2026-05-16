@@ -1,5 +1,7 @@
 {% extends "skeleton.jinja" %}
 
+{% block extra_headers %}<script src="{{ url_for('static', filename='scripts/toast.js') }}" defer></script>{% endblock %}
+
 {% block content %}
     <div id="messages-container" class="messages-container" aria-live="polite">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -17,29 +19,6 @@
             {% endfor %}
         {% endwith %}
     </div>
-
-    <script>
-        (function() {
-            const container = document.getElementById("messages-container");
-            container.querySelectorAll("[data-flash]").forEach(el => {
-                setTimeout(() => {
-                    el.classList.remove("toast--visible");
-                    setTimeout(() => el.remove(), 200);
-                }, 4000);
-            });
-            window.showToast = function(msg, type) {
-                const el = document.createElement("div");
-                el.className = "toast" + (type ? " toast--" + type : "");
-                el.textContent = msg;
-                container.appendChild(el);
-                requestAnimationFrame(() => el.classList.add("toast--visible"));
-                setTimeout(() => {
-                    el.classList.remove("toast--visible");
-                    setTimeout(() => el.remove(), 200);
-                }, 1600);
-            };
-        })();
-    </script>
 
     <header class="site-header">
         <a href="{{ url_for('index') }}" class="site-header__logo">Huebox</a>
