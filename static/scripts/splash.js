@@ -112,13 +112,13 @@ function updateChip(chip, isHovered) {
     applyCenterRepel(chip);
 
     const speed = Math.hypot(chip.vx, chip.vy);
-    const maxSpeed = isHovered ? 1.5 : 6.0;
+    const maxSpeed = isHovered ? 2 : 6.0;
     if (speed > maxSpeed) {
         chip.vx = (chip.vx / speed) * maxSpeed;
         chip.vy = (chip.vy / speed) * maxSpeed;
     }
-    chip.vx *= isHovered ? 0.85 : 0.992;
-    chip.vy *= isHovered ? 0.85 : 0.992;
+    chip.vx *= isHovered ? 0.92 : 0.992;
+    chip.vy *= isHovered ? 0.92 : 0.992;
 
     chip.rotationSpeed *= 0.97;
     if (Math.abs(chip.rotationSpeed) > 0.03) chip.rotationSpeed = Math.sign(chip.rotationSpeed) * 0.03;
@@ -142,11 +142,6 @@ function drawChip(chip, isHovered) {
     ctx.beginPath();
     ctx.roundRect(-chip.size / 2, -chip.size / 2, chip.size, chip.size, chip.size * 0.2);
     ctx.fill();
-    if (isHovered) {
-        ctx.strokeStyle = "rgba(255,255,255,0.65)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
     ctx.restore();
 }
 
