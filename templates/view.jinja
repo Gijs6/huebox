@@ -26,7 +26,8 @@
         <span>{{ palette.colors | length }} color{{ 's' if palette.colors | length != 1 }}</span>
         <span class="palette-view__dot" aria-hidden="true">·</span>
         <span class="palette-view__visibility {% if palette.is_public %}palette-view__visibility--public{% else %}palette-view__visibility--private{% endif %}">
-            <i class="fa-solid {% if palette.is_public %}fa-globe{% else %}fa-lock{% endif %}" aria-hidden="true"></i>
+            <i class="fa-solid {% if palette.is_public %}fa-globe{% else %}fa-lock{% endif %}"
+               aria-hidden="true"></i>
             {{ 'Public' if palette.is_public else 'Private' }}
         </span>
     </div>
