@@ -6,6 +6,7 @@ from flask import (
     url_for,
     session,
     flash,
+    make_response,
 )
 
 import os
@@ -77,6 +78,14 @@ def current_user():
     return db.session.get(User, uid)
 
 
+def smart_redirect(location):
+    if request.headers.get("HX-Request"):
+        resp = make_response("", 200)
+        resp.headers["HX-Redirect"] = location
+        return resp
+    return redirect(location)
+
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -124,12 +133,12 @@ def auth_callback():
     return redirect(url_for("list"))
 
 
-@app.get("/logout")
+@app.post("/logout")
 def logout():
     session.clear()
     if app.debug:
         session["dev_logged_out"] = True
-    return redirect(url_for("index"))
+    return smart_redirect(url_for("index"))
 
 
 @app.get("/")
@@ -154,10 +163,12 @@ def explore():
     return render_template("explore.jinja", palettes=palettes, liked_ids=liked_ids)
 
 
-@app.get("/p/<id>")
+@app.get("/palette/<id>")
 def view_palette(id):
-    p = Palette.query.filter_by(id=id, is_public=True).first_or_404()
+    p = Palette.query.get_or_404(id)
     user = current_user()
+    if not p.is_public and (user is None or user.id != p.user_id):
+        return render_template("error.jinja"), 404
     user_liked = bool(
         user and Like.query.filter_by(user_id=user.id, palette_id=id).first()
     )
@@ -200,18 +211,18 @@ def submit_new():
         )
 
     db.session.commit()
-    return redirect(url_for("palette", id=palette.id))
+    return redirect(url_for("view_palette", id=palette.id))
 
 
-@app.get("/palette/<id>")
+@app.get("/palette/<id>/edit")
 @login_required
-def palette(id):
+def edit_palette(id):
     user = current_user()
     p = Palette.query.filter_by(id=id, user_id=user.id).first_or_404()
     return render_template("edit.jinja", palette=p)
 
 
-@app.post("/palette/<id>")
+@app.put("/palette/<id>")
 @login_required
 def submit_palette(id):
     user = current_user()
@@ -227,17 +238,17 @@ def submit_palette(id):
 
     db.session.commit()
     flash("Saved.", "success")
-    return redirect(url_for("palette", id=p.id))
+    return smart_redirect(url_for("view_palette", id=p.id))
 
 
-@app.post("/palette/<id>/delete")
+@app.delete("/palette/<id>")
 @login_required
 def delete_palette(id):
     user = current_user()
     p = Palette.query.filter_by(id=id, user_id=user.id).first_or_404()
     db.session.delete(p)
     db.session.commit()
-    return redirect(url_for("list"))
+    return smart_redirect(url_for("list"))
 
 
 @app.post("/palette/<id>/duplicate")
@@ -258,7 +269,7 @@ def duplicate_palette(id):
         )
 
     db.session.commit()
-    return redirect(url_for("palette", id=copy.id))
+    return smart_redirect(url_for("view_palette", id=copy.id))
 
 
 @app.post("/palette/<id>/fork")
@@ -280,7 +291,7 @@ def fork_palette(id):
 
     db.session.commit()
     flash(f'Forked "{source.name}" to your palettes.', "success")
-    return redirect(url_for("palette", id=fork.id))
+    return smart_redirect(url_for("view_palette", id=fork.id))
 
 
 @app.post("/palette/<id>/like")
@@ -294,7 +305,7 @@ def toggle_like(id):
     else:
         db.session.add(Like(user_id=user.id, palette_id=id))
     db.session.commit()
-    return redirect(request.referrer or url_for("view_palette", id=id))
+    return smart_redirect(request.referrer or url_for("view_palette", id=id))
 
 
 @app.errorhandler(404)
