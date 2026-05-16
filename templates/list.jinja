@@ -13,7 +13,7 @@
     {% if palettes %}
         <div class="palette-grid">
             {% for p in palettes %}
-                <a href="{{ url_for('palette', id=p.id) }}" class="palette-card">
+                <a href="{{ url_for('view_palette', id=p.id) }}" class="palette-card">
                     <div class="palette-card__strip">
                         {% for color in p.colors %}<div class="palette-card__swatch" style="--color: {{ color.hex_value }}"></div>{% endfor %}
                     </div>

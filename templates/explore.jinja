@@ -34,24 +34,20 @@
                         </div>
 
                         <div class="palette-card__footer">
-                            {% if current_user %}
-                                {% if current_user.id != p.user_id %}
-                                    <form method="POST" action="{{ url_for('fork_palette', id=p.id) }}">
-                                        <button type="submit" class="btn btn--ghost btn--sm">Fork</button>
-                                    </form>
-                                {% else %}
-                                    <a href="{{ url_for('palette', id=p.id) }}"
-                                       class="btn btn--ghost btn--sm">Edit</a>
-                                {% endif %}
+                            {% if current_user and current_user.id != p.user_id %}
+                                <button type="button"
+                                        class="btn btn--ghost btn--sm"
+                                        hx-post="{{ url_for('fork_palette', id=p.id) }}"
+                                        hx-swap="none">Fork</button>
                             {% endif %}
 
                             {% if current_user and current_user.id != p.user_id %}
-                                <form method="POST" action="{{ url_for('toggle_like', id=p.id) }}">
-                                    <button type="submit"
-                                            class="like-btn like-btn--sm {% if p.id in liked_ids %}like-btn--liked{% endif %}">
-                                        <i class="fa-solid fa-heart"></i> {{ p.like_count }}
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        class="like-btn like-btn--sm {% if p.id in liked_ids %}like-btn--liked{% endif %}"
+                                        hx-post="{{ url_for('toggle_like', id=p.id) }}"
+                                        hx-swap="none">
+                                    <i class="fa-solid fa-heart"></i> {{ p.like_count }}
+                                </button>
                             {% else %}
                                 <span class="like-btn like-btn--sm like-btn--static">
                                     <i class="fa-solid fa-heart"></i> {{ p.like_count }}

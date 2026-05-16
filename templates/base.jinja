@@ -3,7 +3,7 @@
 {% block content %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <ul class="flash-list">
+            <ul class="flash-list" aria-live="polite">
                 {% for category, message in messages %}
                     <li class="flash flash--{{ category }}">
                         {% if category == 'success' %}
@@ -40,9 +40,12 @@
                         <i class="fa-solid fa-chevron-down site-header__user-chevron"></i>
                     </button>
                     <div class="site-header__dropdown">
-                        <a href="{{ url_for('logout') }}" class="site-header__dropdown-item">
+                        <button type="button"
+                                class="site-header__dropdown-item"
+                                hx-post="{{ url_for('logout') }}"
+                                hx-swap="none">
                             <i class="fa-solid fa-right-from-bracket"></i> Sign out
-                        </a>
+                        </button>
                     </div>
                 </div>
             {% else %}
