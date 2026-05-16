@@ -13,6 +13,9 @@
 
     --radius: 6px;
 
+    --duration-fast: 100ms;
+    --duration-mid: 150ms;
+
     --font-family-sans: "IBM Plex Sans", sans-serif;
     --font-family-mono: "IBM Plex Mono", monospace;
 
@@ -21,6 +24,11 @@
     --font-size-md: 1rem;
     --font-size-lg: 1.125rem;
     --font-size-xl: 1.5rem;
+    --font-size-2xl: 2rem;
+    --font-size-3xl: 3rem;
+    --font-size-4xl: 4rem;
+    --font-size-5xl: 6rem;
+    --font-size-6xl: 8rem;
 
     --font-weight-light: 300;
     --font-weight-regular: 400;
@@ -31,9 +39,12 @@
 
     --color-bg: var(--color-white);
     --color-fg: var(--color-black);
+    --color-fg-muted: var(--color-gray-7);
+    --color-overlay: rgba(0, 0, 0, 0.45);
+    --color-overlay-strong: rgba(0, 0, 0, 0.7);
 
-    --color-accent: var(--color-orange-6);
-    --color-accent-dark: var(--color-orange-9);
+    --color-accent: var(--color-gray-8);
+    --color-accent-dark: var(--color-gray-9);
 
     --color-border: var(--color-gray-2);
     --color-border-mid: var(--color-gray-3);
@@ -99,9 +110,9 @@ textarea {
     background: var(--color-accent);
     color: var(--color-white);
     transition:
-        background 0.1s,
-        color 0.1s,
-        border-color 0.1s;
+        background var(--duration-fast),
+        color var(--duration-fast),
+        border-color var(--duration-fast);
     white-space: nowrap;
 
     &:hover {
@@ -111,12 +122,12 @@ textarea {
 
     &.btn--ghost {
         background: transparent;
-        color: var(--color-gray-7);
+        color: var(--color-fg-muted);
         border-color: var(--color-border-mid);
 
         &:hover {
             background: var(--color-gray-1);
-            color: var(--color-black);
+            color: var(--color-fg);
         }
     }
 
@@ -131,14 +142,14 @@ textarea {
     }
 
     &.btn--ghost-light {
-        background: rgba(255, 255, 255, 0.08);
-        color: rgba(255, 255, 255, 0.7);
-        border-color: rgba(255, 255, 255, 0.15);
+        background: color-mix(in srgb, var(--color-white) 8%, transparent);
+        color: color-mix(in srgb, var(--color-white) 70%, transparent);
+        border-color: color-mix(in srgb, var(--color-white) 15%, transparent);
 
         &:hover {
-            background: rgba(255, 255, 255, 0.16);
-            color: white;
-            border-color: rgba(255, 255, 255, 0.3);
+            background: color-mix(in srgb, var(--color-white) 16%, transparent);
+            color: var(--color-white);
+            border-color: color-mix(in srgb, var(--color-white) 30%, transparent);
         }
     }
 
