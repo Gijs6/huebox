@@ -1,7 +1,3 @@
-document.querySelectorAll(".palette-view__swatch-name").forEach((el) => {
-    el.textContent = colorName(el.dataset.hex);
-});
-
 document.querySelectorAll(".palette-view__swatch").forEach((el) => {
     el.addEventListener("click", async () => {
         if (await copyText(el.dataset.hex)) window.showToast("Copied " + el.dataset.hex);

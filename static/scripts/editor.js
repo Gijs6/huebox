@@ -124,7 +124,6 @@ const picker = (() => {
         if (activeSlot) {
             activeSlot.querySelector(".color-slot__input").value = hex;
             activeSlot.querySelector(".color-slot__hex").textContent = hex;
-            activeSlot.querySelector(".color-slot__name").textContent = colorName(hex);
             activeSlot.style.setProperty("--color", hex);
         }
         saveDraft();
@@ -239,11 +238,7 @@ function createSlot(hex) {
     hexBtn.title = "Copy hex value";
     hexBtn.textContent = hex;
 
-    const nameEl = document.createElement("span");
-    nameEl.className = "color-slot__name";
-    nameEl.textContent = colorName(hex);
-
-    li.append(swatch, hexBtn, nameEl);
+    li.append(swatch, hexBtn);
     return li;
 }
 
@@ -252,9 +247,6 @@ function wireSlot(li) {
     const hexBtn = li.querySelector(".color-slot__hex");
     const remove = li.querySelector(".color-slot__remove");
     const swatch = li.querySelector(".color-slot__swatch");
-    const nameEl = li.querySelector(".color-slot__name");
-
-    if (!nameEl.textContent) nameEl.textContent = colorName(input.value);
 
     swatch.addEventListener("click", (e) => {
         if (remove.contains(e.target)) return;

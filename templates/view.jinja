@@ -4,8 +4,6 @@
 
 {% block extra_headers %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='scripts/color-names.js') }}"
-            defer></script>
     <script src="{{ url_for('static', filename='scripts/copy-text.js') }}" defer></script>
     <script src="{{ url_for('static', filename='scripts/view.js') }}" defer></script>
 {% endblock %}
@@ -41,7 +39,6 @@
                     title="Copy {{ color.hex_value }}">
                 <span class="palette-view__swatch-info">
                     <span class="palette-view__swatch-hex">{{ color.hex_value }}</span>
-                    <span class="palette-view__swatch-name" data-hex="{{ color.hex_value }}"></span>
                 </span>
             </button>
         {% endfor %}

@@ -2,8 +2,6 @@
 
 {% block extra_headers %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='scripts/color-names.js') }}"
-            defer></script>
     <script src="{{ url_for('static', filename='scripts/copy-text.js') }}" defer></script>
     <script src="{{ url_for('static', filename='scripts/editor.js') }}" defer></script>
 {% endblock %}
@@ -53,7 +51,6 @@
                                 </button>
                             </div>
                             <button type="button" class="color-slot__hex" title="Copy hex value">{{ color.hex_value }}</button>
-                            <span class="color-slot__name"></span>
                         </li>
                     {% endfor %}
                 {% endif %}
