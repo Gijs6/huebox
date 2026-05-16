@@ -7,11 +7,7 @@
     {% block main %}
         <form method="POST"
               id="palette-editor"
-              {% if palette %}
-                  hx-put="{{ url_for('submit_palette', id=palette.id) }}"
-              {% else %}
-                  action="{{ url_for('submit_new') }}"
-              {% endif %}>
+              {% if palette %} hx-put="{{ url_for('submit_palette', id=palette.id) }}" {% else %} action="{{ url_for('submit_new') }}" {% endif %}>
             <div class="palette-editor__header">
                 <input type="text"
                        name="name"
@@ -667,7 +663,12 @@
 
                 const cols = [...palette, "#000000", "#ffffff"];
                 const labels = [...palette, "Black", "White"];
-                const BADGE = { aaa: "AAA", aa: "AA", large: "AA+", fail: "✗" };
+                const BADGE = {
+                    aaa: "AAA",
+                    aa: "AA",
+                    large: "AA+",
+                    fail: "✗"
+                };
 
                 const table = document.createElement("table");
                 table.className = "contrast-table";

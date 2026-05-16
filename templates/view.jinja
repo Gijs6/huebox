@@ -52,7 +52,8 @@
                     <i class="fa-solid fa-heart"></i>
                     {{ palette.like_count }}
                 </span>
-                <a href="{{ url_for('edit_palette', id=palette.id) }}" class="btn btn--ghost">
+                <a href="{{ url_for('edit_palette', id=palette.id) }}"
+                   class="btn btn--ghost">
                     <i class="fa-solid fa-pen"></i> Edit
                 </a>
             {% endif %}

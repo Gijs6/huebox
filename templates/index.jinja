@@ -7,7 +7,9 @@
         <canvas class="splash__canvas" id="splashCanvas"></canvas>
 
         <div class="splash__center">
-            <h1 class="splash__title"><span class="splash__title-letter">H</span><span class="splash__title-letter">u</span><span class="splash__title-letter">e</span><span class="splash__title-letter">b</span><span class="splash__title-letter">o</span><span class="splash__title-letter">x</span></h1>
+            <h1 class="splash__title">
+                <span class="splash__title-letter">H</span><span class="splash__title-letter">u</span><span class="splash__title-letter">e</span><span class="splash__title-letter">b</span><span class="splash__title-letter">o</span><span class="splash__title-letter">x</span>
+            </h1>
             <p class="splash__sub">A minimal color palette manager.</p>
             <div class="splash__actions">
                 {% if current_user %}
@@ -26,7 +28,10 @@
         const canvas = document.getElementById("splashCanvas");
         const ctx = canvas.getContext("2d");
         let chips = [];
-        let mouse = { x: -9999, y: -9999 };
+        let mouse = {
+            x: -9999,
+            y: -9999
+        };
         let blasts = [];
 
         const BLAST_EXPAND = 9;
@@ -84,7 +89,9 @@
 
         function init() {
             resize();
-            chips = Array.from({ length: 70 }, makeChip);
+            chips = Array.from({
+                length: 70
+            }, makeChip);
         }
 
         function hitTest(chip, mouseX, mouseY) {
@@ -180,7 +187,10 @@
 
             let hoveredChip = null;
             for (let i = chips.length - 1; i >= 0; i--) {
-                if (hitTest(chips[i], mouse.x, mouse.y)) { hoveredChip = chips[i]; break; }
+                if (hitTest(chips[i], mouse.x, mouse.y)) {
+                    hoveredChip = chips[i];
+                    break;
+                }
             }
 
             if (hoveredChip) {
@@ -202,12 +212,21 @@
             requestAnimationFrame(frame);
         }
 
-        canvas.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-        canvas.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+        canvas.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        canvas.addEventListener('mouseleave', () => {
+            mouse.x = -9999;
+            mouse.y = -9999;
+        });
         canvas.addEventListener('click', (e) => {
             let clicked = null;
             for (let i = chips.length - 1; i >= 0; i--) {
-                if (hitTest(chips[i], mouse.x, mouse.y)) { clicked = chips[i]; break; }
+                if (hitTest(chips[i], mouse.x, mouse.y)) {
+                    clicked = chips[i];
+                    break;
+                }
             }
             if (clicked) {
                 const hex = clicked.color.toUpperCase();
@@ -224,7 +243,11 @@
                     showToast(`Copied ${hex}`);
                 }
             } else {
-                blasts.push({ x: e.clientX, y: e.clientY, radius: 0 });
+                blasts.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    radius: 0
+                });
             }
         });
         window.addEventListener("resize", () => {
