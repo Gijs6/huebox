@@ -165,12 +165,13 @@
 }
 
 .palette-card__strip {
-    display: flex;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     height: 5rem;
 }
 
 .palette-card__swatch {
-    flex: 1;
     background-color: var(--color);
 }
 
@@ -247,7 +248,9 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(var(--spacing-2xl), 1fr);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     overflow: hidden;
@@ -278,8 +281,7 @@
 }
 
 .color-slot {
-    flex: 1 0 0;
-    min-width: var(--spacing-2xl);
+    min-width: 0;
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--color-border);
@@ -765,8 +767,16 @@
     color: var(--color-border-mid);
 }
 
+.palette-view__visibility {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+}
+
 .palette-view__strip {
-    display: flex;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     height: 11rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
@@ -775,7 +785,7 @@
 }
 
 .palette-view__swatch {
-    flex: 1;
+    min-width: 0;
     background-color: var(--color);
     border: none;
     padding: 0;
