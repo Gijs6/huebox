@@ -3,6 +3,8 @@ const ctx = canvas.getContext("2d");
 let chips = [];
 let mouse = { x: -9999, y: -9999 };
 let blasts = [];
+const splashCenter = document.querySelector(".splash__center");
+let repelRect = null;
 
 const BLAST_EXPAND = 9;
 const BLAST_RING_WIDTH = 55;
@@ -42,6 +44,7 @@ function makeChip() {
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    if (splashCenter) repelRect = splashCenter.getBoundingClientRect();
 }
 
 function init() {
@@ -74,12 +77,39 @@ function applyBlastForce(chip) {
     }
 }
 
+function applyCenterRepel(chip) {
+    if (!repelRect) return;
+    const REPEL_MARGIN = 90;
+    const REPEL_STRENGTH = 0.45;
+
+    const cx = Math.max(repelRect.left, Math.min(repelRect.right, chip.x));
+    const cy = Math.max(repelRect.top, Math.min(repelRect.bottom, chip.y));
+    const dx = chip.x - cx;
+    const dy = chip.y - cy;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist === 0) {
+        const rcx = (repelRect.left + repelRect.right) / 2;
+        const rcy = (repelRect.top + repelRect.bottom) / 2;
+        const ex = chip.x - rcx || 1;
+        const ey = chip.y - rcy;
+        const ed = Math.hypot(ex, ey) || 1;
+        chip.vx += (ex / ed) * REPEL_STRENGTH * 2;
+        chip.vy += (ey / ed) * REPEL_STRENGTH * 2;
+    } else if (dist < REPEL_MARGIN) {
+        const force = (1 - dist / REPEL_MARGIN) * REPEL_STRENGTH;
+        chip.vx += (dx / dist) * force;
+        chip.vy += (dy / dist) * force;
+    }
+}
+
 function updateChip(chip, isHovered) {
     chip.wander += chip.wanderSpeed + (Math.random() - 0.5) * 0.004;
     chip.vx += Math.cos(chip.wander) * 0.012;
     chip.vy += Math.sin(chip.wander) * 0.012;
 
     applyBlastForce(chip);
+    applyCenterRepel(chip);
 
     const speed = Math.hypot(chip.vx, chip.vy);
     const maxSpeed = isHovered ? 1.5 : 6.0;
