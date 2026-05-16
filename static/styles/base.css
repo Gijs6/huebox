@@ -12,7 +12,6 @@
     font-size: var(--font-size-lg);
     color: var(--color-fg);
     text-decoration: none;
-    letter-spacing: -0.02em;
 }
 
 .site-header__nav {
@@ -211,7 +210,6 @@
     background: var(--color-gray-1);
     color: var(--color-fg-muted);
     font-weight: var(--font-weight-medium);
-    letter-spacing: 0.03em;
 }
 
 .palette-card__fork {
@@ -445,7 +443,6 @@
     font-size: var(--font-size-6xl);
     font-weight: var(--font-weight-black);
     color: var(--color-fg);
-    letter-spacing: -0.04em;
     margin: 0;
     line-height: 1;
     pointer-events: all;
@@ -454,13 +451,6 @@
 .splash__title-letter {
     display: inline-block;
     transition: color var(--duration-mid);
-}
-
-.splash__sub {
-    font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
-    margin: 0;
-    letter-spacing: 0.01em;
 }
 
 .splash__actions {
