@@ -5,7 +5,7 @@ import string
 from datetime import datetime
 
 
-def generate_id(length=5):
+def generate_id(length=8):
     chars = string.ascii_uppercase + string.digits
     return "".join(secrets.choice(chars) for _ in range(length))
 
@@ -14,7 +14,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(8), primary_key=True, default=generate_id)
     github_id = db.Column(db.Integer, unique=True, nullable=False)
     login = db.Column(db.String(100), nullable=False)
     avatar_url = db.Column(db.String(500))
@@ -26,8 +26,8 @@ class User(db.Model):
 
 
 class Palette(db.Model):
-    id = db.Column(db.String(5), primary_key=True, default=generate_id)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    id = db.Column(db.String(8), primary_key=True, default=generate_id)
+    user_id = db.Column(db.String(8), db.ForeignKey("user.id"), nullable=True)
     name = db.Column(db.String(100), nullable=False)
     is_public = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
@@ -49,13 +49,13 @@ class Palette(db.Model):
 
 
 class Color(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    palette_id = db.Column(db.String(5), db.ForeignKey("palette.id"), nullable=False)
+    id = db.Column(db.String(8), primary_key=True, default=generate_id)
+    palette_id = db.Column(db.String(8), db.ForeignKey("palette.id"), nullable=False)
     hex_value = db.Column(db.String(7), nullable=False)
     position = db.Column(db.Integer, nullable=False)
 
 
 class Like(db.Model):
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    palette_id = db.Column(db.String(5), db.ForeignKey("palette.id"), primary_key=True)
+    user_id = db.Column(db.String(8), db.ForeignKey("user.id"), primary_key=True)
+    palette_id = db.Column(db.String(8), db.ForeignKey("palette.id"), primary_key=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
