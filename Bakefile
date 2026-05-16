@@ -39,12 +39,12 @@ publish() {
     STASHED=0
   fi
 
-  format
+  format || true
   git commit -a -m "Format repo" || true
-  git push
-  deploy
 
   if [ "$STASHED" -eq 1 ]; then
     git stash pop
   fi
+
+  git push & deploy & wait
 }
