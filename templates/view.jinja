@@ -14,50 +14,45 @@
                  class="palette-card__avatar">
         {% endif %}
         <span>by {{ palette.owner.login }}</span>
-        <span class="palette-view__dot">·</span>
+        <span class="palette-view__dot" aria-hidden="true">·</span>
         <span>{{ palette.colors | length }} color{{ 's' if palette.colors | length != 1 }}</span>
     </div>
 
     <div class="palette-view__strip">
-        {% for color in palette.colors %}<div class="palette-view__swatch" style="--color: {{ color.hex_value }}"></div>{% endfor %}
-    </div>
-
-    <div class="palette-view__colors">
         {% for color in palette.colors %}
-            <div class="palette-view__color">
-                <div class="palette-view__chip"
-                     style="--color: {{ color.hex_value }}"
-                     data-hex="{{ color.hex_value }}"
-                     title="Copy"
-                     role="button"
-                     tabindex="0"></div>
-                <span class="palette-view__hex"
-                      data-hex="{{ color.hex_value }}"
-                      title="Copy">{{ color.hex_value }}</span>
-                <span class="palette-view__color-name" data-hex="{{ color.hex_value }}"></span>
-            </div>
+            <button class="palette-view__swatch"
+                    type="button"
+                    style="--color: {{ color.hex_value }}"
+                    data-hex="{{ color.hex_value }}"
+                    title="Copy {{ color.hex_value }}">
+                <span class="palette-view__swatch-info">
+                    <span class="palette-view__swatch-hex">{{ color.hex_value }}</span>
+                    <span class="palette-view__swatch-name" data-hex="{{ color.hex_value }}"></span>
+                </span>
+            </button>
         {% endfor %}
     </div>
 
     <div class="palette-view__actions">
         {% if current_user %}
             {% if current_user.id != palette.user_id %}
-                <form method="POST" action="{{ url_for('toggle_like', id=palette.id) }}">
-                    <button type="submit"
-                            class="like-btn {% if user_liked %}like-btn--liked{% endif %}">
-                        <i class="fa-solid fa-heart"></i>
-                        {{ palette.like_count }}
-                    </button>
-                </form>
-                <form method="POST" action="{{ url_for('fork_palette', id=palette.id) }}">
-                    <button type="submit" class="btn btn--ghost">Fork</button>
-                </form>
+                <button type="button"
+                        class="like-btn {% if user_liked %}like-btn--liked{% endif %}"
+                        hx-post="{{ url_for('toggle_like', id=palette.id) }}"
+                        hx-swap="none">
+                    <i class="fa-solid fa-heart"></i>
+                    {{ palette.like_count }}
+                </button>
+                <button type="button"
+                        class="btn btn--ghost"
+                        hx-post="{{ url_for('fork_palette', id=palette.id) }}"
+                        hx-swap="none">Fork</button>
             {% else %}
                 <span class="like-btn like-btn--static">
                     <i class="fa-solid fa-heart"></i>
                     {{ palette.like_count }}
                 </span>
-                <a href="{{ url_for('palette', id=palette.id) }}" class="btn btn--ghost">
+                <a href="{{ url_for('edit_palette', id=palette.id) }}" class="btn btn--ghost">
                     <i class="fa-solid fa-pen"></i> Edit
                 </a>
             {% endif %}
@@ -82,12 +77,13 @@
 
     <script>
         const toast = document.getElementById("copyToast");
+        let toastTimer;
 
         function showToast(msg) {
             toast.textContent = msg;
             toast.classList.add("copy-toast--visible");
-            clearTimeout(toast._t);
-            toast._t = setTimeout(() => toast.classList.remove("copy-toast--visible"), 1600);
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove("copy-toast--visible"), 1600);
         }
 
         async function copyText(text) {
@@ -269,11 +265,11 @@
             return best[0];
         }
 
-        document.querySelectorAll(".palette-view__color-name").forEach(el => {
+        document.querySelectorAll(".palette-view__swatch-name").forEach(el => {
             el.textContent = colorName(el.dataset.hex);
         });
 
-        document.querySelectorAll(".palette-view__chip, .palette-view__hex").forEach(el => {
+        document.querySelectorAll(".palette-view__swatch").forEach(el => {
             el.addEventListener("click", async () => {
                 if (await copyText(el.dataset.hex)) showToast("Copied " + el.dataset.hex);
             });
