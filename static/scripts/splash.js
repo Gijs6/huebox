@@ -201,11 +201,19 @@ canvas.addEventListener("click", (e) => {
         blasts.push({ x: e.clientX, y: e.clientY, radius: 0 });
     }
 });
+
 window.addEventListener("resize", () => {
+    const oldWidth = canvas.width;
+    const oldHeight = canvas.height;
+
     resize();
+
+    const scaleX = canvas.width / oldWidth;
+    const scaleY = canvas.height / oldHeight;
+
     for (const chip of chips) {
-        chip.x = Math.random() * canvas.width;
-        chip.y = Math.random() * canvas.height;
+        chip.x *= scaleX;
+        chip.y *= scaleY;
     }
 });
 
