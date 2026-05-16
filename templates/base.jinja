@@ -1,24 +1,45 @@
 {% extends "skeleton.jinja" %}
 
 {% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul class="flash-list" aria-live="polite">
-                {% for category, message in messages %}
-                    <li class="flash flash--{{ category }}">
-                        {% if category == 'success' %}
-                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                        {% elif category == 'error' %}
-                            <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
-                        {% elif category == 'info' %}
-                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                        {% endif %}
-                        {{ message }}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    <div id="messages-container" class="messages-container" aria-live="polite">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="toast toast--{{ category }} toast--visible" data-flash>
+                    {% if category == 'success' %}
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                    {% elif category == 'error' %}
+                        <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+                    {% elif category == 'info' %}
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+    </div>
+
+    <script>
+        (function () {
+            const container = document.getElementById("messages-container");
+            container.querySelectorAll("[data-flash]").forEach(el => {
+                setTimeout(() => {
+                    el.classList.remove("toast--visible");
+                    setTimeout(() => el.remove(), 200);
+                }, 4000);
+            });
+            window.showToast = function (msg, type) {
+                const el = document.createElement("div");
+                el.className = "toast" + (type ? " toast--" + type : "");
+                el.textContent = msg;
+                container.appendChild(el);
+                requestAnimationFrame(() => el.classList.add("toast--visible"));
+                setTimeout(() => {
+                    el.classList.remove("toast--visible");
+                    setTimeout(() => el.remove(), 200);
+                }, 1600);
+            };
+        })();
+    </script>
 
     <header class="site-header">
         <a href="{{ url_for('index') }}" class="site-header__logo">Huebox</a>

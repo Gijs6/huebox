@@ -73,17 +73,9 @@
         <button type="button" class="btn btn--ghost" id="viewJsonBtn">Copy JSON</button>
     </div>
 
-    <div class="copy-toast" id="copyToast" aria-live="polite"></div>
-
     <script>
-        const toast = document.getElementById("copyToast");
-        let toastTimer;
-
         function showToast(msg) {
-            toast.textContent = msg;
-            toast.classList.add("copy-toast--visible");
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.remove("copy-toast--visible"), 1600);
+            window.showToast(msg);
         }
 
         async function copyText(text) {

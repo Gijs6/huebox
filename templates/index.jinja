@@ -53,10 +53,10 @@
         ].join(';');
         document.body.appendChild(colorLabel);
 
-        const toast = document.createElement('div');
-        toast.className = 'copy-toast';
-        toast.setAttribute('aria-live', 'polite');
-        document.body.appendChild(toast);
+        const messagesContainer = document.createElement('div');
+        messagesContainer.className = 'messages-container';
+        messagesContainer.setAttribute('aria-live', 'polite');
+        document.body.appendChild(messagesContainer);
 
         function makeChip() {
             const color = `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
@@ -158,13 +158,16 @@
             ctx.restore();
         }
 
-        let toastTimer;
-
         function showToast(msg) {
-            clearTimeout(toastTimer);
-            toast.textContent = msg;
-            toast.classList.add('copy-toast--visible');
-            toastTimer = setTimeout(() => toast.classList.remove('copy-toast--visible'), 1600);
+            const el = document.createElement('div');
+            el.className = 'toast';
+            el.textContent = msg;
+            messagesContainer.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('toast--visible'));
+            setTimeout(() => {
+                el.classList.remove('toast--visible');
+                setTimeout(() => el.remove(), 200);
+            }, 1600);
         }
 
         function frame() {

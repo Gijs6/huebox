@@ -164,40 +164,50 @@ textarea {
     }
 }
 
-.flash-list {
+.messages-container {
+    position: fixed;
+    bottom: var(--spacing-xl);
+    right: var(--spacing-xl);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    z-index: 200;
+    align-items: flex-end;
+    pointer-events: none;
 }
 
-.flash {
+.toast {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-white);
-    border-radius: var(--radius);
-    animation: flash-dismiss 0s linear 4s forwards;
+    background: var(--color-gray-9);
+    white-space: nowrap;
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(0.5rem);
+    transition:
+        opacity var(--duration-fast),
+        transform var(--duration-fast);
 
-    &.flash--success {
+    &.toast--visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    &.toast--success {
         background: var(--color-green-7);
     }
-    &.flash--error {
+
+    &.toast--error {
         background: var(--color-red-7);
     }
-    &.flash--info {
-        background: var(--color-blue-7);
-    }
-}
 
-@keyframes flash-dismiss {
-    to {
-        opacity: 0;
-        visibility: hidden;
+    &.toast--info {
+        background: var(--color-blue-7);
     }
 }

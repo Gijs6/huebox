@@ -26,7 +26,10 @@
                            class="toggle__input"
                            {% if palette and palette.is_public %}checked{% endif %}>
                     <span class="toggle__track"></span>
-                    <span class="toggle__label">Public</span>
+                    <span class="toggle__label">
+                        <i class="fa-solid toggle__vis-icon" aria-hidden="true"></i>
+                        <span class="toggle__vis-text"></span>
+                    </span>
                 </label>
             </div>
 
@@ -96,19 +99,12 @@
             </div>
         {% endif %}
 
-        <div class="copy-toast" id="copyToast" aria-live="polite"></div>
-
         <script>
             const addBtn = document.getElementById("addColorBtn");
             const list = document.getElementById("colorList");
-            const toast = document.getElementById("copyToast");
-            let toastTimer;
 
             function showToast(msg) {
-                toast.textContent = msg;
-                toast.classList.add("copy-toast--visible");
-                clearTimeout(toastTimer);
-                toastTimer = setTimeout(() => toast.classList.remove("copy-toast--visible"), 1600);
+                window.showToast(msg);
             }
 
             async function copyText(text) {
@@ -764,5 +760,18 @@
             {# djlint:off #}
             {% endif %}
             {# djlint:on #}
+
+            const isPublicInput = document.querySelector("[name='is_public']");
+            const visIcon = document.querySelector(".toggle__vis-icon");
+            const visText = document.querySelector(".toggle__vis-text");
+
+            function updateVisibility() {
+                const pub = isPublicInput.checked;
+                visIcon.classList.remove("fa-globe", "fa-lock");
+                visIcon.classList.add(pub ? "fa-globe" : "fa-lock");
+                visText.textContent = pub ? "Public" : "Private";
+            }
+            updateVisibility();
+            isPublicInput.addEventListener("change", updateVisibility);
         </script>
     {% endblock %}
