@@ -52,7 +52,9 @@ const picker = (() => {
     canvas.height = SIZE;
 
     let activeSlot = null;
-    let h = 0, s = 1, v = 1;
+    let h = 0,
+        s = 1,
+        v = 1;
 
     function drawSV() {
         const gH = ctx.createLinearGradient(0, 0, SIZE, 0);
@@ -75,22 +77,37 @@ const picker = (() => {
 
     function hsv2hex(hh, ss, vv) {
         const i = Math.floor(hh / 60) % 6;
-        const f = (hh / 60) - Math.floor(hh / 60);
+        const f = hh / 60 - Math.floor(hh / 60);
         const p = vv * (1 - ss);
         const q = vv * (1 - f * ss);
         const t = vv * (1 - (1 - f) * ss);
         const m = [
-            [vv, t, p], [q, vv, p], [p, vv, t],
-            [p, q, vv], [t, p, vv], [vv, p, q]
+            [vv, t, p],
+            [q, vv, p],
+            [p, vv, t],
+            [p, q, vv],
+            [t, p, vv],
+            [vv, p, q]
         ][i];
-        return "#" + m.map(x => Math.round(x * 255).toString(16).padStart(2, "0")).join("");
+        return (
+            "#" +
+            m
+                .map((x) =>
+                    Math.round(x * 255)
+                        .toString(16)
+                        .padStart(2, "0")
+                )
+                .join("")
+        );
     }
 
     function hex2hsv(hex) {
         const r = parseInt(hex.slice(1, 3), 16) / 255;
         const g = parseInt(hex.slice(3, 5), 16) / 255;
         const b = parseInt(hex.slice(5, 7), 16) / 255;
-        const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+        const max = Math.max(r, g, b),
+            min = Math.min(r, g, b),
+            d = max - min;
         let hh = 0;
         if (d) {
             if (max === r) hh = ((g - b) / d + 6) % 6;
@@ -140,9 +157,17 @@ const picker = (() => {
         posThumb();
         commit();
     }
-    svEl.addEventListener("mousedown", e => { dragging = true; pickAt(e); e.preventDefault(); });
-    document.addEventListener("mousemove", e => { if (dragging) pickAt(e); });
-    document.addEventListener("mouseup", () => { dragging = false; });
+    svEl.addEventListener("mousedown", (e) => {
+        dragging = true;
+        pickAt(e);
+        e.preventDefault();
+    });
+    document.addEventListener("mousemove", (e) => {
+        if (dragging) pickAt(e);
+    });
+    document.addEventListener("mouseup", () => {
+        dragging = false;
+    });
 
     function open(slot) {
         activeSlot = slot;
@@ -174,7 +199,7 @@ const picker = (() => {
         if (activeSlot === slot) close();
     }
 
-    document.addEventListener("click", e => {
+    document.addEventListener("click", (e) => {
         if (!el.hidden && !el.contains(e.target) && !e.target.closest(".color-slot__swatch")) {
             close();
         }
@@ -231,7 +256,7 @@ function wireSlot(li) {
 
     if (!nameEl.textContent) nameEl.textContent = colorName(input.value);
 
-    swatch.addEventListener("click", e => {
+    swatch.addEventListener("click", (e) => {
         if (remove.contains(e.target)) return;
         picker.open(li);
     });
@@ -250,7 +275,11 @@ function wireSlot(li) {
 list.querySelectorAll(".color-slot").forEach(wireSlot);
 
 addBtn.addEventListener("click", () => {
-    const hex = "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+    const hex =
+        "#" +
+        Math.floor(Math.random() * 0xffffff)
+            .toString(16)
+            .padStart(6, "0");
     const li = createSlot(hex);
     list.appendChild(li);
     wireSlot(li);
@@ -262,7 +291,7 @@ addBtn.addEventListener("click", () => {
 let dragged = null;
 
 function wireDrag(li) {
-    li.addEventListener("dragstart", e => {
+    li.addEventListener("dragstart", (e) => {
         dragged = li;
         e.dataTransfer.effectAllowed = "move";
         setTimeout(() => li.classList.add("color-slot--dragging"), 0);
@@ -270,19 +299,15 @@ function wireDrag(li) {
 
     li.addEventListener("dragend", () => {
         li.classList.remove("color-slot--dragging");
-        list.querySelectorAll(".color-slot--over").forEach(el =>
-            el.classList.remove("color-slot--over")
-        );
+        list.querySelectorAll(".color-slot--over").forEach((el) => el.classList.remove("color-slot--over"));
         dragged = null;
         saveDraft();
     });
 
-    li.addEventListener("dragover", e => {
+    li.addEventListener("dragover", (e) => {
         e.preventDefault();
         if (!dragged || dragged === li) return;
-        list.querySelectorAll(".color-slot--over").forEach(el =>
-            el.classList.remove("color-slot--over")
-        );
+        list.querySelectorAll(".color-slot--over").forEach((el) => el.classList.remove("color-slot--over"));
         li.classList.add("color-slot--over");
         const rect = li.getBoundingClientRect();
         if (e.clientX < rect.left + rect.width / 2) {
@@ -296,7 +321,7 @@ function wireDrag(li) {
 list.querySelectorAll(".color-slot").forEach(wireDrag);
 
 function getColors() {
-    return [...list.querySelectorAll(".color-slot__input")].map(p => p.value);
+    return [...list.querySelectorAll(".color-slot__input")].map((p) => p.value);
 }
 
 function getPaletteName() {
@@ -307,8 +332,13 @@ const exportCssBtn = document.getElementById("exportCssBtn");
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 
 exportCssBtn?.addEventListener("click", async () => {
-    const slug = getPaletteName().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-    const vars = getColors().map((c, i) => `  --color-${slug}-${i + 1}: ${c};`).join("\n");
+    const slug = getPaletteName()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+    const vars = getColors()
+        .map((c, i) => `  --color-${slug}-${i + 1}: ${c};`)
+        .join("\n");
     if (await copyText(`:root {\n${vars}\n}`)) window.showToast("CSS copied");
 });
 
@@ -401,14 +431,17 @@ contrastBtn.addEventListener("click", () => {
 if (isNewPalette) {
     const DRAFT_KEY = "huebox-draft";
 
-    saveDraft = function() {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({
-            name: document.querySelector(".palette-editor__name").value,
-            colors: getColors(),
-        }));
+    saveDraft = function () {
+        localStorage.setItem(
+            DRAFT_KEY,
+            JSON.stringify({
+                name: document.querySelector(".palette-editor__name").value,
+                colors: getColors()
+            })
+        );
     };
 
-    (function() {
+    (function () {
         const raw = localStorage.getItem(DRAFT_KEY);
         if (!raw) return;
         try {

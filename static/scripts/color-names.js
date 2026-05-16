@@ -145,10 +145,14 @@ function colorName(hex) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
-    let best = CN[0], bestDist = Infinity;
+    let best = CN[0],
+        bestDist = Infinity;
     for (const c of CN) {
         const d = (r - c[1]) ** 2 + (g - c[2]) ** 2 + (b - c[3]) ** 2;
-        if (d < bestDist) { bestDist = d; best = c; }
+        if (d < bestDist) {
+            bestDist = d;
+            best = c;
+        }
     }
     return best[0];
 }

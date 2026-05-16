@@ -9,32 +9,19 @@ const BLAST_RING_WIDTH = 55;
 const BLAST_MAX_RADIUS = 500;
 const BLAST_STRENGTH = 3.0;
 
-const colorLabel = document.createElement('div');
-colorLabel.style.cssText = [
-    'position:fixed',
-    'pointer-events:none',
-    'background:var(--color-gray-9)',
-    'color:var(--color-white)',
-    'font-family:var(--font-family-mono)',
-    'font-size:var(--font-size-xs)',
-    'font-weight:var(--font-weight-medium)',
-    'padding:var(--spacing-xs) var(--spacing-sm)',
-    'border-radius:var(--radius)',
-    'display:none',
-    'z-index:100',
-    'white-space:nowrap',
-    'border-left-width:3px',
-    'border-left-style:solid',
-].join(';');
+const colorLabel = document.createElement("div");
+colorLabel.style.cssText = ["position:fixed", "pointer-events:none", "background:var(--color-gray-9)", "color:var(--color-white)", "font-family:var(--font-family-mono)", "font-size:var(--font-size-xs)", "font-weight:var(--font-weight-medium)", "padding:var(--spacing-xs) var(--spacing-sm)", "border-radius:var(--radius)", "display:none", "z-index:100", "white-space:nowrap", "border-left-width:3px", "border-left-style:solid"].join(";");
 document.body.appendChild(colorLabel);
 
-const messagesContainer = document.createElement('div');
-messagesContainer.className = 'messages-container';
-messagesContainer.setAttribute('aria-live', 'polite');
+const messagesContainer = document.createElement("div");
+messagesContainer.className = "messages-container";
+messagesContainer.setAttribute("aria-live", "polite");
 document.body.appendChild(messagesContainer);
 
 function makeChip() {
-    const color = `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
+    const color = `#${Math.floor(Math.random() * 0xffffff)
+        .toString(16)
+        .padStart(6, "0")}`;
     const angle = Math.random() * Math.PI * 2;
     const speed = 0.25 + Math.random() * 0.55;
     return {
@@ -48,7 +35,7 @@ function makeChip() {
         size: 22 + Math.random() * 56,
         alpha: 1,
         wander: Math.random() * Math.PI * 2,
-        wanderSpeed: (Math.random() - 0.5) * 0.018,
+        wanderSpeed: (Math.random() - 0.5) * 0.018
     };
 }
 
@@ -97,8 +84,8 @@ function updateChip(chip, isHovered) {
     const speed = Math.hypot(chip.vx, chip.vy);
     const maxSpeed = isHovered ? 1.5 : 6.0;
     if (speed > maxSpeed) {
-        chip.vx = chip.vx / speed * maxSpeed;
-        chip.vy = chip.vy / speed * maxSpeed;
+        chip.vx = (chip.vx / speed) * maxSpeed;
+        chip.vy = (chip.vy / speed) * maxSpeed;
     }
     chip.vx *= isHovered ? 0.85 : 0.992;
     chip.vy *= isHovered ? 0.85 : 0.992;
@@ -126,7 +113,7 @@ function drawChip(chip, isHovered) {
     ctx.roundRect(-chip.size / 2, -chip.size / 2, chip.size, chip.size, chip.size * 0.2);
     ctx.fill();
     if (isHovered) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+        ctx.strokeStyle = "rgba(255,255,255,0.65)";
         ctx.lineWidth = 2;
         ctx.stroke();
     }
@@ -134,13 +121,13 @@ function drawChip(chip, isHovered) {
 }
 
 function showToast(msg) {
-    const el = document.createElement('div');
-    el.className = 'toast';
+    const el = document.createElement("div");
+    el.className = "toast";
     el.textContent = msg;
     messagesContainer.appendChild(el);
-    requestAnimationFrame(() => el.classList.add('toast--visible'));
+    requestAnimationFrame(() => el.classList.add("toast--visible"));
     setTimeout(() => {
-        el.classList.remove('toast--visible');
+        el.classList.remove("toast--visible");
         setTimeout(() => el.remove(), 200);
     }, 1600);
 }
@@ -163,12 +150,12 @@ function frame() {
 
     if (hoveredChip) {
         colorLabel.textContent = hoveredChip.color.toUpperCase();
-        colorLabel.style.display = 'block';
-        colorLabel.style.left = (mouse.x + 16) + 'px';
-        colorLabel.style.top = (mouse.y - 12) + 'px';
+        colorLabel.style.display = "block";
+        colorLabel.style.left = mouse.x + 16 + "px";
+        colorLabel.style.top = mouse.y - 12 + "px";
         colorLabel.style.borderLeftColor = hoveredChip.color;
     } else {
-        colorLabel.style.display = 'none';
+        colorLabel.style.display = "none";
     }
 
     for (const chip of chips) {
@@ -180,15 +167,15 @@ function frame() {
     requestAnimationFrame(frame);
 }
 
-canvas.addEventListener('mousemove', (e) => {
+canvas.addEventListener("mousemove", (e) => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
 });
-canvas.addEventListener('mouseleave', () => {
+canvas.addEventListener("mouseleave", () => {
     mouse.x = -9999;
     mouse.y = -9999;
 });
-canvas.addEventListener('click', (e) => {
+canvas.addEventListener("click", (e) => {
     let clicked = null;
     for (let i = chips.length - 1; i >= 0; i--) {
         if (hitTest(chips[i], mouse.x, mouse.y)) {
@@ -201,12 +188,12 @@ canvas.addEventListener('click', (e) => {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(hex).then(() => showToast(`Copied ${hex}`));
         } else {
-            const ta = document.createElement('textarea');
+            const ta = document.createElement("textarea");
             ta.value = hex;
-            ta.style.cssText = 'position:fixed;opacity:0';
+            ta.style.cssText = "position:fixed;opacity:0";
             document.body.appendChild(ta);
             ta.select();
-            document.execCommand('copy');
+            document.execCommand("copy");
             document.body.removeChild(ta);
             showToast(`Copied ${hex}`);
         }
@@ -225,10 +212,10 @@ window.addEventListener("resize", () => {
 init();
 frame();
 
-const titleLetters = document.querySelectorAll('.splash__title-letter');
-const randColor = () => `rgb(${Math.floor(Math.random()*256)},${Math.floor(Math.random()*256)},${Math.floor(Math.random()*256)})`;
-titleLetters.forEach(letter => {
-    letter.addEventListener('mouseenter', () => {
+const titleLetters = document.querySelectorAll(".splash__title-letter");
+const randColor = () => `rgb(${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)})`;
+titleLetters.forEach((letter) => {
+    letter.addEventListener("mouseenter", () => {
         letter.style.color = randColor();
     });
 });

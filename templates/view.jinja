@@ -4,7 +4,8 @@
 
 {% block extra_headers %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='scripts/color-names.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='scripts/color-names.js') }}"
+            defer></script>
     <script src="{{ url_for('static', filename='scripts/copy-text.js') }}" defer></script>
     <script src="{{ url_for('static', filename='scripts/view.js') }}" defer></script>
 {% endblock %}
@@ -85,6 +86,6 @@
     <script>
         const colors = {{ palette.colors | map(attribute='hex_value') | list | tojson }};
         const paletteName = {{ palette.name | tojson }};
-    </script>
+</script>
     {# djlint:on #}
 {% endblock %}

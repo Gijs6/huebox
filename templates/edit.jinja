@@ -2,7 +2,8 @@
 
 {% block extra_headers %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='scripts/color-names.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='scripts/color-names.js') }}"
+            defer></script>
     <script src="{{ url_for('static', filename='scripts/copy-text.js') }}" defer></script>
     <script src="{{ url_for('static', filename='scripts/editor.js') }}" defer></script>
 {% endblock %}
@@ -105,6 +106,6 @@
         {# djlint:off #}
         <script>
             const isNewPalette = {{ (not palette) | tojson }};
-        </script>
+</script>
         {# djlint:on #}
     {% endblock %}
