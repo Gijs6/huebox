@@ -453,12 +453,18 @@
 }
 
 .splash__title {
-    font-size: 4.5rem;
+    font-size: 8rem;
     font-weight: var(--font-weight-black);
     color: var(--color-black);
     letter-spacing: -0.04em;
     margin: 0;
     line-height: 1;
+    pointer-events: all;
+}
+
+.splash__title-letter {
+    display: inline-block;
+    transition: color 0.15s;
 }
 
 .splash__sub {
