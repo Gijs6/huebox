@@ -158,11 +158,13 @@
             ctx.restore();
         }
 
+        let toastTimer;
+
         function showToast(msg) {
-            clearTimeout(toast._t);
+            clearTimeout(toastTimer);
             toast.textContent = msg;
             toast.classList.add('copy-toast--visible');
-            toast._t = setTimeout(() => toast.classList.remove('copy-toast--visible'), 1600);
+            toastTimer = setTimeout(() => toast.classList.remove('copy-toast--visible'), 1600);
         }
 
         function frame() {

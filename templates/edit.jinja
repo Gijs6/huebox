@@ -5,7 +5,13 @@
     {% endblock %}
 
     {% block main %}
-        <form method="POST" id="palette-editor">
+        <form method="POST"
+              id="palette-editor"
+              {% if palette %}
+                  hx-put="{{ url_for('submit_palette', id=palette.id) }}"
+              {% else %}
+                  action="{{ url_for('submit_new') }}"
+              {% endif %}>
             <div class="palette-editor__header">
                 <input type="text"
                        name="name"
@@ -39,7 +45,7 @@
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
-                            <span class="color-slot__hex" title="Copy">{{ color.hex_value }}</span>
+                            <button type="button" class="color-slot__hex" title="Copy hex value">{{ color.hex_value }}</button>
                             <span class="color-slot__name"></span>
                         </li>
                     {% endfor %}
@@ -53,17 +59,17 @@
             </button>
             <button type="submit" form="palette-editor" class="btn">Save</button>
 
-            <div class="palette-editor__sep"></div>
+            <hr aria-hidden="true" class="palette-editor__sep">
             <button type="button" class="btn btn--ghost" id="contrastBtn">Contrast</button>
 
             {% if palette %}
                 <button type="button" class="btn btn--ghost" id="exportCssBtn">Copy CSS</button>
                 <button type="button" class="btn btn--ghost" id="exportJsonBtn">Copy JSON</button>
-                <div class="palette-editor__sep"></div>
-                <form method="POST"
-                      action="{{ url_for('duplicate_palette', id=palette.id) }}">
-                    <button type="submit" class="btn btn--ghost">Duplicate</button>
-                </form>
+                <hr aria-hidden="true" class="palette-editor__sep">
+                <button type="button"
+                        class="btn btn--ghost"
+                        hx-post="{{ url_for('duplicate_palette', id=palette.id) }}"
+                        hx-swap="none">Duplicate</button>
                 {% if palette.is_public %}
                     <a href="{{ url_for('view_palette', id=palette.id) }}"
                        class="btn btn--ghost"
@@ -80,13 +86,13 @@
 
         {% if palette %}
             <div class="palette-editor__danger">
-                <form method="POST"
-                      action="{{ url_for('delete_palette', id=palette.id) }}"
-                      onsubmit="return confirm('Delete {{ palette.name }}?')">
-                    <button type="submit" class="btn btn--danger">
-                        <i class="fa-solid fa-trash"></i> Delete palette
-                    </button>
-                </form>
+                <button type="button"
+                        class="btn btn--danger"
+                        hx-delete="{{ url_for('delete_palette', id=palette.id) }}"
+                        hx-confirm="Delete {{ palette.name }}?"
+                        hx-swap="none">
+                    <i class="fa-solid fa-trash"></i> Delete palette
+                </button>
             </div>
         {% endif %}
 
@@ -96,12 +102,13 @@
             const addBtn = document.getElementById("addColorBtn");
             const list = document.getElementById("colorList");
             const toast = document.getElementById("copyToast");
+            let toastTimer;
 
             function showToast(msg) {
                 toast.textContent = msg;
                 toast.classList.add("copy-toast--visible");
-                clearTimeout(toast._t);
-                toast._t = setTimeout(() => toast.classList.remove("copy-toast--visible"), 1600);
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove("copy-toast--visible"), 1600);
             }
 
             async function copyText(text) {
@@ -302,22 +309,33 @@
                 const el = document.createElement("div");
                 el.className = "color-picker";
                 el.hidden = true;
-                el.innerHTML = `
-                <div class="color-picker__sv">
-                    <canvas class="color-picker__canvas"></canvas>
-                    <div class="color-picker__sv-thumb"></div>
-                </div>
-                <input type="range" class="color-picker__hue" min="0" max="359" value="0" step="1">
-                <input type="text" class="color-picker__hex" placeholder="#000000" maxlength="7">
-            `;
+
+                const svEl = document.createElement("div");
+                svEl.className = "color-picker__sv";
+                const canvas = document.createElement("canvas");
+                canvas.className = "color-picker__canvas";
+                const thumb = document.createElement("div");
+                thumb.className = "color-picker__sv-thumb";
+                svEl.append(canvas, thumb);
+
+                const hueEl = document.createElement("input");
+                hueEl.type = "range";
+                hueEl.className = "color-picker__hue";
+                hueEl.min = "0";
+                hueEl.max = "359";
+                hueEl.value = "0";
+                hueEl.step = "1";
+
+                const hexIn = document.createElement("input");
+                hexIn.type = "text";
+                hexIn.className = "color-picker__hex";
+                hexIn.placeholder = "#000000";
+                hexIn.maxLength = 7;
+
+                el.append(svEl, hueEl, hexIn);
                 document.body.appendChild(el);
 
-                const canvas = el.querySelector(".color-picker__canvas");
                 const ctx = canvas.getContext("2d");
-                const hueEl = el.querySelector(".color-picker__hue");
-                const hexIn = el.querySelector(".color-picker__hex");
-                const thumb = el.querySelector(".color-picker__sv-thumb");
-                const svEl = el.querySelector(".color-picker__sv");
                 const SIZE = 192;
                 canvas.width = SIZE;
                 canvas.height = SIZE;
@@ -491,22 +509,43 @@
                 li.className = "color-slot";
                 li.setAttribute("draggable", "true");
                 li.style.setProperty("--color", hex);
-                li.innerHTML = `
-                <div class="color-slot__swatch">
-                    <input type="hidden" name="colors" value="${hex}" class="color-slot__input">
-                    <button type="button" class="color-slot__remove" aria-label="Remove">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-                <span class="color-slot__hex" title="Copy">${hex}</span>
-                <span class="color-slot__name">${colorName(hex)}</span>
-            `;
+
+                const swatch = document.createElement("div");
+                swatch.className = "color-slot__swatch";
+
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "colors";
+                input.value = hex;
+                input.className = "color-slot__input";
+
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "color-slot__remove";
+                removeBtn.setAttribute("aria-label", "Remove");
+                const xIcon = document.createElement("i");
+                xIcon.className = "fa-solid fa-xmark";
+                removeBtn.appendChild(xIcon);
+
+                swatch.append(input, removeBtn);
+
+                const hexBtn = document.createElement("button");
+                hexBtn.type = "button";
+                hexBtn.className = "color-slot__hex";
+                hexBtn.title = "Copy hex value";
+                hexBtn.textContent = hex;
+
+                const nameEl = document.createElement("span");
+                nameEl.className = "color-slot__name";
+                nameEl.textContent = colorName(hex);
+
+                li.append(swatch, hexBtn, nameEl);
                 return li;
             }
 
             function wireSlot(li) {
                 const input = li.querySelector(".color-slot__input");
-                const hexEl = li.querySelector(".color-slot__hex");
+                const hexBtn = li.querySelector(".color-slot__hex");
                 const remove = li.querySelector(".color-slot__remove");
                 const swatch = li.querySelector(".color-slot__swatch");
                 const nameEl = li.querySelector(".color-slot__name");
@@ -518,7 +557,7 @@
                     picker.open(li);
                 });
 
-                hexEl.addEventListener("click", async () => {
+                hexBtn.addEventListener("click", async () => {
                     if (await copyText(input.value)) showToast("Copied " + input.value);
                 });
 
@@ -606,45 +645,76 @@
             const contrastPanel = document.getElementById("contrastPanel");
             const contrastInner = document.getElementById("contrastInner");
 
+            function makeContrastHeader(color, label) {
+                const th = document.createElement("th");
+                const swatch = document.createElement("span");
+                swatch.className = "contrast-swatch";
+                swatch.style.background = color;
+                const hexSpan = document.createElement("span");
+                hexSpan.className = "contrast-hex";
+                hexSpan.textContent = label;
+                th.append(swatch, document.createElement("br"), hexSpan);
+                return th;
+            }
+
             function buildContrastTable() {
                 const palette = getColors();
+                contrastInner.textContent = "";
+
                 if (!palette.length) {
-                    contrastInner.innerHTML = '<p class="contrast-empty">No colors yet.</p>';
+                    const p = document.createElement("p");
+                    p.className = "contrast-empty";
+                    p.textContent = "No colors yet.";
+                    contrastInner.appendChild(p);
                     return;
                 }
+
                 const cols = [...palette, "#000000", "#ffffff"];
                 const labels = [...palette, "Black", "White"];
+                const BADGE = { aaa: "AAA", aa: "AA", large: "AA+", fail: "✗" };
 
-                let html = '<table class="contrast-table"><thead><tr><th></th>';
+                const table = document.createElement("table");
+                table.className = "contrast-table";
+
+                const thead = document.createElement("thead");
+                const headerRow = document.createElement("tr");
+                headerRow.appendChild(document.createElement("th"));
                 for (let j = 0; j < cols.length; j++) {
-                    html += `<th><span class="contrast-swatch" style="background:${cols[j]}"></span><br><span class="contrast-hex">${labels[j]}</span></th>`;
+                    headerRow.appendChild(makeContrastHeader(cols[j], labels[j]));
                 }
-                html += "</tr></thead><tbody>";
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
 
+                const tbody = document.createElement("tbody");
                 for (let i = 0; i < cols.length; i++) {
-                    html += `<tr><th><span class="contrast-swatch" style="background:${cols[i]}"></span><br><span class="contrast-hex">${labels[i]}</span></th>`;
+                    const row = document.createElement("tr");
+                    row.appendChild(makeContrastHeader(cols[i], labels[i]));
+
                     for (let j = 0; j < cols.length; j++) {
+                        const td = document.createElement("td");
                         if (i === j) {
-                            html += '<td class="contrast-cell--skip">—</td>';
+                            td.className = "contrast-cell--skip";
+                            td.textContent = "—";
                         } else {
                             const ratio = contrastRatio(cols[i], cols[j]);
                             let cls = "fail";
                             if (ratio >= 7) cls = "aaa";
                             else if (ratio >= 4.5) cls = "aa";
                             else if (ratio >= 3) cls = "large";
-                            const badge = {
-                                aaa: "AAA",
-                                aa: "AA",
-                                large: "AA+",
-                                fail: "✗"
-                            } [cls];
-                            html += `<td class="contrast-cell contrast-cell--${cls}" title="${ratio.toFixed(2)}:1">${ratio.toFixed(2)}<br><span class="contrast-badge">${badge}</span></td>`;
+                            td.className = `contrast-cell contrast-cell--${cls}`;
+                            td.title = `${ratio.toFixed(2)}:1`;
+                            td.textContent = ratio.toFixed(2);
+                            const badge = document.createElement("span");
+                            badge.className = "contrast-badge";
+                            badge.textContent = BADGE[cls];
+                            td.append(document.createElement("br"), badge);
                         }
+                        row.appendChild(td);
                     }
-                    html += "</tr>";
+                    tbody.appendChild(row);
                 }
-                html += "</tbody></table>";
-                contrastInner.innerHTML = html;
+                table.appendChild(tbody);
+                contrastInner.appendChild(table);
             }
 
             contrastBtn.addEventListener("click", () => {
