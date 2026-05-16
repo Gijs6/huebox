@@ -25,45 +25,29 @@
     <script>
         const canvas = document.getElementById("splashCanvas");
         const ctx = canvas.getContext("2d");
-        let ribbons = [];
-        const mouse = {
-            x: -9999,
-            y: -9999
-        };
+        let chips = [];
+        const mouse = { x: -9999, y: -9999 };
 
-        function randomPalette() {
-            const count = 3 + Math.floor(Math.random() * 5);
-            const baseHue = Math.random() * 360;
-            const spread = 20 + Math.random() * 60;
-            return Array.from({
-                length: count
-            }, (_, i) => {
-                const h = (baseHue + i * spread) % 360;
-                const s = 45 + Math.random() * 50;
-                const l = 30 + Math.random() * 40;
-                return `hsl(${h.toFixed(0)},${s.toFixed(0)}%,${l.toFixed(0)}%)`;
-            });
-        }
-
-        function makeRibbon(initial = false) {
-            const palette = randomPalette();
-            const swatchW = 28 + Math.random() * 58;
-            const swatchH = 12 + Math.random() * 38;
-            const gap = 2;
-            const totalW = palette.length * (swatchW + gap);
-
+        function makeChip() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            const color = `rgb(${r},${g},${b})`;
+            const angle = Math.random() * Math.PI * 2;
+            const spd = 0.25 + Math.random() * 0.55;
             return {
-                palette,
-                swatchW,
-                swatchH,
-                gap,
-                totalW,
-                angle: 0,
-                speed: 0.22 + Math.random() * 0.52,
-                alpha: 0.18 + Math.random() * 0.72,
+                x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                x: initial ?
-                    Math.random() * (canvas.width + totalW) - totalW : -totalW - 10,
+                vx: Math.cos(angle) * spd,
+                vy: Math.sin(angle) * spd,
+                rot: Math.random() * Math.PI * 2,
+                rotSpd: (Math.random() - 0.5) * 0.007,
+                color,
+                w: 22 + Math.random() * 56,
+                h: 10 + Math.random() * 28,
+                alpha: 0.2 + Math.random() * 0.65,
+                wander: Math.random() * Math.PI * 2,
+                wanderSpd: (Math.random() - 0.5) * 0.018,
             };
         }
 
@@ -74,57 +58,82 @@
 
         function init() {
             resize();
-            ribbons = Array.from({
-                length: 26
-            }, () => makeRibbon(true));
+            chips = Array.from({ length: 70 }, makeChip);
         }
 
         function frame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            for (const r of ribbons) {
-                const cx = r.x + r.totalW / 2;
-                const cy = r.y + r.swatchH / 2;
-                const dx = mouse.x - cx;
-                const dy = mouse.y - cy;
-                const dist = Math.hypot(dx, dy);
-                const influence = Math.max(0, 1 - dist / 500);
-                const targetAngle = Math.atan2(dy, dx) * influence * 0.25;
-                r.angle += (targetAngle - r.angle) * 0.06;
+            for (const p of chips) {
+                // Gentle wandering drift
+                p.wander += p.wanderSpd + (Math.random() - 0.5) * 0.004;
+                p.vx += Math.cos(p.wander) * 0.012;
+                p.vy += Math.sin(p.wander) * 0.012;
+
+                // Swirl toward mouse
+                if (mouse.x > -999) {
+                    const dx = mouse.x - p.x;
+                    const dy = mouse.y - p.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < 500 && dist > 1) {
+                        const t = 1 - dist / 500;
+                        p.vx += (dx / dist) * 0.18 * t;
+                        p.vy += (dy / dist) * 0.18 * t;
+                        p.vx += (-dy / dist) * 0.10 * t;
+                        p.vy += (dx / dist) * 0.10 * t;
+                    }
+                }
+
+                // Speed cap + drag
+                const spd = Math.hypot(p.vx, p.vy);
+                if (spd > 4.0) { p.vx = p.vx / spd * 4.0; p.vy = p.vy / spd * 4.0; }
+                p.vx *= 0.992;
+                p.vy *= 0.992;
+
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rot += p.rotSpd;
+
+                // Wrap edges
+                const pad = Math.max(p.w, p.h);
+                if (p.x < -pad) p.x = canvas.width + pad;
+                else if (p.x > canvas.width + pad) p.x = -pad;
+                if (p.y < -pad) p.y = canvas.height + pad;
+                else if (p.y > canvas.height + pad) p.y = -pad;
 
                 ctx.save();
-                ctx.globalAlpha = r.alpha;
-                ctx.translate(cx, cy);
-                ctx.rotate(r.angle);
-
-                r.palette.forEach((color, i) => {
-                    ctx.fillStyle = color;
-                    ctx.fillRect(i * (r.swatchW + r.gap) - r.totalW / 2, -r.swatchH / 2, r.swatchW, r.swatchH);
-                });
-
+                ctx.globalAlpha = p.alpha;
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
                 ctx.restore();
-                r.x += r.speed;
-
-                if (r.x > canvas.width + r.totalW + 50) {
-                    Object.assign(r, makeRibbon(false));
-                }
             }
 
             requestAnimationFrame(frame);
         }
 
-        window.addEventListener("mousemove", e => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
+        window.addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener("mouseleave", () => { mouse.x = -9999; mouse.y = -9999; });
+        window.addEventListener("click", e => {
+            for (const p of chips) {
+                const dx = p.x - e.clientX;
+                const dy = p.y - e.clientY;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 380 && dist > 1) {
+                    const force = 7 * (1 - dist / 380);
+                    p.vx += (dx / dist) * force;
+                    p.vy += (dy / dist) * force;
+                    p.rotSpd = (Math.random() - 0.5) * 0.18;
+                }
+            }
         });
-        window.addEventListener("mouseleave", () => {
-            mouse.x = -9999;
-            mouse.y = -9999;
-        });
-
         window.addEventListener("resize", () => {
             resize();
-            for (const r of ribbons) r.y = Math.random() * canvas.height;
+            for (const p of chips) {
+                p.x = Math.random() * canvas.width;
+                p.y = Math.random() * canvas.height;
+            }
         });
 
         init();
