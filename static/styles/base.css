@@ -654,8 +654,8 @@
 }
 
 .contrast-cell--large {
-    background: var(--color-blue-1);
-    color: var(--color-blue-9);
+    background: var(--color-orange-0);
+    color: var(--color-orange-9);
 }
 
 .contrast-cell--fail {

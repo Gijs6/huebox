@@ -2,6 +2,7 @@ const addBtn = document.getElementById("addColorBtn");
 const list = document.getElementById("colorList");
 
 let saveDraft = () => {};
+let rebuildContrast = () => {};
 
 function relLum(hex) {
     return [1, 3, 5].reduce((acc, i, j) => {
@@ -127,6 +128,7 @@ const picker = (() => {
             activeSlot.style.setProperty("--color", hex);
         }
         saveDraft();
+        rebuildContrast();
     }
 
     hueEl.addEventListener("input", () => {
@@ -261,6 +263,7 @@ function wireSlot(li) {
         picker.closeIfActive(li);
         li.remove();
         saveDraft();
+        rebuildContrast();
     });
 }
 
@@ -278,6 +281,7 @@ addBtn.addEventListener("click", () => {
     wireDrag(li);
     picker.open(li);
     saveDraft();
+    rebuildContrast();
 });
 
 let dragged = null;
@@ -369,7 +373,7 @@ function buildContrastTable() {
 
     const cols = [...palette, "#000000", "#ffffff"];
     const labels = [...palette, "Black", "White"];
-    const BADGE = { aaa: "AAA", aa: "AA", large: "AA+", fail: "✗" };
+    const BADGE = { aaa: "AAA", aa: "AA", large: "AA (lg only)", fail: "✗" };
 
     const table = document.createElement("table");
     table.className = "contrast-table";
@@ -414,6 +418,10 @@ function buildContrastTable() {
     table.appendChild(tbody);
     contrastInner.appendChild(table);
 }
+
+rebuildContrast = () => {
+    if (!contrastPanel.hidden) buildContrastTable();
+};
 
 contrastBtn.addEventListener("click", () => {
     contrastPanel.hidden = !contrastPanel.hidden;
