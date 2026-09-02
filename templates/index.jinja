@@ -1,28 +1,29 @@
 {% extends "skeleton.jinja" %}
 
+{% from "_macros.jinja" import icon %}
+
 {% block title %}Huebox{% endblock %}
+
+{% block body_class %}splash{% endblock %}
 
 {% block extra_headers %}<script src="{{ url_for('static', filename='scripts/splash.js') }}" defer></script>{% endblock %}
 
-{% block content %}
-    <div class="splash">
-        <canvas class="splash__canvas" id="splashCanvas"></canvas>
+{% block body_content %}
+    <canvas class="splash__canvas" id="splashCanvas" aria-hidden="true"></canvas>
 
-        <div class="splash__center">
-            <h1 class="splash__title">
-                <span class="splash__title-letter">H</span><span class="splash__title-letter">u</span><span class="splash__title-letter">e</span><span class="splash__title-letter">b</span><span class="splash__title-letter">o</span><span class="splash__title-letter">x</span>
-            </h1>
-            <div class="splash__actions">
-                {% if current_user %}
-                    <a href="{{ url_for('list') }}" class="btn btn--lg">My palettes →</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn--lg">
-                        <i class="fa-brands fa-github"></i> Sign in with GitHub
-                    </a>
-                {% endif %}
-                <a href="{{ url_for('explore') }}" class="btn btn--lg btn--ghost">Explore</a>
-            </div>
+    <div class="splash__center">
+        <h1 class="splash__title" aria-label="Huebox">
+            <span class="splash__letter" aria-hidden="true">H</span><span class="splash__letter" aria-hidden="true">u</span><span class="splash__letter" aria-hidden="true">e</span><span class="splash__letter" aria-hidden="true">b</span><span class="splash__letter" aria-hidden="true">o</span><span class="splash__letter" aria-hidden="true">x</span>
+        </h1>
+
+        <div class="splash__actions">
+            {% if current_user %}
+                <a href="{{ url_for('list') }}" class="button button--lg">My palettes</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="button button--lg">{{ icon("log-in") }} Sign in with GitHub</a>
+            {% endif %}
+            <a href="{{ url_for('explore') }}"
+               class="button button--lg button--ghost">Explore</a>
         </div>
     </div>
-
 {% endblock %}

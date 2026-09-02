@@ -1,108 +1,121 @@
 {% extends "base.jinja" %}
 
+{% from "_macros.jinja" import icon %}
+
+{% block title %}
+    {% if palette %}
+        {{ palette.name }}
+    {% else %}
+        New palette
+    {% endif %}
+{% endblock %}
+
 {% block extra_headers %}
-    {{ super() }}
     <script src="{{ url_for('static', filename='scripts/copy-text.js') }}" defer></script>
     <script src="{{ url_for('static', filename='scripts/editor.js') }}" defer></script>
 {% endblock %}
 
-{% block title %}
-    {%- if palette -%}{{ palette.name }}{%- else -%}New palette{%- endif -%}
-    {% endblock %}
-
-    {% block main %}
-        <form method="POST"
-              id="palette-editor"
-              {% if palette %} hx-put="{{ url_for('submit_palette', id=palette.id) }}" {% else %} action="{{ url_for('submit_new') }}" {% endif %}>
-            <div class="palette-editor__header">
-                <input type="text"
-                       name="name"
-                       placeholder="Palette name"
-                       class="palette-editor__name"
-                       {% if palette %}value="{{ palette.name }}"{% endif %}
-                       required>
-
-                <label class="toggle">
-                    <input type="checkbox"
-                           name="is_public"
-                           class="toggle__input"
-                           {% if palette and palette.is_public %}checked{% endif %}>
-                    <span class="toggle__track"></span>
-                    <span class="toggle__label">
-                        <i class="fa-solid toggle__vis-icon" aria-hidden="true"></i>
-                        <span class="toggle__vis-text"></span>
-                    </span>
-                </label>
-            </div>
-
-            <ul class="palette-editor__colors" id="colorList">
-                {% if palette %}
-                    {% for color in palette.colors %}
-                        <li class="color-slot"
-                            style="--color: {{ color.hex_value }}"
-                            draggable="true">
-                            <div class="color-slot__swatch">
-                                <input type="hidden"
-                                       name="colors"
-                                       value="{{ color.hex_value }}"
-                                       class="color-slot__input">
-                                <button type="button" class="color-slot__remove" aria-label="Remove">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </div>
-                            <button type="button" class="color-slot__hex" title="Copy hex value">{{ color.hex_value }}</button>
-                        </li>
-                    {% endfor %}
-                {% endif %}
-            </ul>
-        </form>
-
-        <div class="palette-editor__actions">
-            <button type="button" class="btn btn--ghost" id="addColorBtn">
-                <i class="fa-solid fa-plus"></i> Add
-            </button>
-            <button type="submit" form="palette-editor" class="btn">Save</button>
-
-            <hr aria-hidden="true" class="palette-editor__sep">
-            <button type="button" class="btn btn--ghost" id="contrastBtn">Contrast</button>
-
+{% block main %}
+    <div class="page-head">
+        <h1>
             {% if palette %}
-                <button type="button" class="btn btn--ghost" id="exportCssBtn">Copy CSS</button>
-                <button type="button" class="btn btn--ghost" id="exportJsonBtn">Copy JSON</button>
-                <hr aria-hidden="true" class="palette-editor__sep">
-                <button type="button"
-                        class="btn btn--ghost"
-                        hx-post="{{ url_for('duplicate_palette', id=palette.id) }}"
-                        hx-swap="none">Duplicate</button>
-                {% if palette.is_public %}
-                    <a href="{{ url_for('view_palette', id=palette.id) }}"
-                       class="btn btn--ghost"
-                       target="_blank">
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i> View
-                    </a>
-                {% endif %}
+                Edit palette
+            {% else %}
+                New palette
             {% endif %}
+        </h1>
+    </div>
+
+    <form class="editor"
+          id="paletteEditor"
+          method="post"
+          {% if palette %}hx-put="{{ url_for('submit_palette', id=palette.id) }}"{% else %}action="{{ url_for('submit_new') }}"{% endif %}>
+        <div class="editor__header">
+            <input type="text"
+                   class="editor__name"
+                   name="name"
+                   placeholder="Palette name"
+                   aria-label="Palette name"
+                   {% if palette %}value="{{ palette.name }}"{% endif %}
+                   required />
+
+            <div class="editor__visibility">
+                <label class="switch">
+                    <input type="checkbox"
+                           class="editor__visibility-input"
+                           name="is_public"
+                           id="isPublic"
+                           {% if palette and palette.is_public %}checked{% endif %} />
+                    <span class="switch__track"></span>
+                </label>
+                <label class="editor__visibility-label" for="isPublic">Public palette</label>
+                <span class="editor__visibility-hint" id="visibilityHint"></span>
+            </div>
         </div>
 
-        <div class="contrast-panel" id="contrastPanel" hidden>
-            <div class="contrast-panel__inner" id="contrastInner"></div>
-        </div>
+        <ul class="color-slot-list" id="colorList">
+            {% if palette %}
+                {% for color in palette.colors %}
+                    <li class="color-slot"
+                        style="--color: {{ color.hex_value }}"
+                        draggable="true">
+                        <span class="color-slot__swatch">
+                            <input type="hidden"
+                                   class="color-slot__input"
+                                   name="colors"
+                                   value="{{ color.hex_value }}" />
+                            <button type="button" class="color-slot__remove" aria-label="Remove color">{{ icon("x") }}</button>
+                        </span>
+                        <button type="button" class="color-slot__hex" aria-label="Copy hex value">{{ color.hex_value }}</button>
+                    </li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+    </form>
+
+    <div class="toolbar toolbar--plain editor__actions">
+        <button type="button" class="button button--ghost" id="addColorButton">{{ icon("plus") }} Add</button>
+        <button type="submit" form="paletteEditor" class="button">Save</button>
+
+        <div class="toolbar__separator"></div>
+        <button type="button" class="button button--ghost" id="contrastButton">Contrast</button>
 
         {% if palette %}
-            <div class="palette-editor__danger">
-                <button type="button"
-                        class="btn btn--danger"
-                        hx-delete="{{ url_for('delete_palette', id=palette.id) }}"
-                        hx-confirm="Delete {{ palette.name }}?"
-                        hx-swap="none">
-                    <i class="fa-solid fa-trash"></i> Delete palette
-                </button>
-            </div>
-        {% endif %}
+            <div class="toolbar__separator"></div>
+            <button type="button" class="button button--ghost" id="copyCssButton">Copy CSS</button>
+            <button type="button" class="button button--ghost" id="copyJsonButton">Copy JSON</button>
 
-        {# djlint:off #}
-        <script>
-            const isNewPalette = {{ (not palette) | tojson }};
+            <div class="toolbar__separator"></div>
+            <button type="button"
+                    class="button button--ghost"
+                    hx-post="{{ url_for('duplicate_palette', id=palette.id) }}"
+                    hx-swap="none">Duplicate</button>
+            {% if palette.is_public %}
+                <a href="{{ url_for('view_palette', id=palette.id) }}"
+                   class="button button--ghost"
+                   target="_blank"
+                   rel="noopener">{{ icon("external-link") }} View</a>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="contrast-panel" id="contrastPanel" hidden>
+        <div class="contrast-panel__inner" id="contrastInner"></div>
+    </div>
+
+    {% if palette %}
+        <div class="editor__danger">
+            <button type="button"
+                    class="button button--danger button--ghost"
+                    hx-delete="{{ url_for('delete_palette', id=palette.id) }}"
+                    hx-confirm="Delete {{ palette.name }}?"
+                    hx-swap="none">{{ icon("trash-2") }} Delete palette</button>
+        </div>
+    {% endif %}
+
+    {# djlint:off #}
+    <script>
+        const isNewPalette = {{ (not palette) | tojson }};
 </script>
-        {# djlint:on #}
-    {% endblock %}
+    {# djlint:on #}
+{% endblock %}

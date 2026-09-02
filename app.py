@@ -1,5 +1,6 @@
 from flask import (
     Flask,
+    abort,
     render_template,
     request,
     redirect,
@@ -168,7 +169,7 @@ def view_palette(id):
     p = Palette.query.get_or_404(id)
     user = current_user()
     if not p.is_public and (user is None or user.id != p.user_id):
-        return render_template("error.jinja"), 404
+        abort(404)
     user_liked = bool(
         user and Like.query.filter_by(user_id=user.id, palette_id=id).first()
     )
@@ -313,7 +314,7 @@ def not_found(e):
     return render_template(
         "error.jinja",
         code=404,
-        title="Not Found",
+        title="Not found",
         description="The page you're looking for doesn't exist.",
     ), 404
 
@@ -333,7 +334,7 @@ def server_error(e):
     return render_template(
         "error.jinja",
         code=500,
-        title="Server Error",
+        title="Server error",
         description="Something went wrong on our end. Please try again later.",
     ), 500
 

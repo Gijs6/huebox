@@ -1,100 +1,130 @@
-const addBtn = document.getElementById("addColorBtn");
+const addColorButton = document.getElementById("addColorButton");
 const list = document.getElementById("colorList");
+const nameInput = document.querySelector(".editor__name");
 
 let saveDraft = () => {};
 let rebuildContrast = () => {};
 
-function relLum(hex) {
-    return [1, 3, 5].reduce((acc, i, j) => {
-        let v = parseInt(hex.slice(i, i + 2), 16) / 255;
-        v = v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-        return acc + v * [0.2126, 0.7152, 0.0722][j];
+function relativeLuminance(hex) {
+    return [1, 3, 5].reduce((acc, offset, channel) => {
+        let value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+        value = value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+        return acc + value * [0.2126, 0.7152, 0.0722][channel];
     }, 0);
 }
 
 function contrastRatio(a, b) {
-    const [l1, l2] = [relLum(a), relLum(b)].sort((x, y) => y - x);
-    return (l1 + 0.05) / (l2 + 0.05);
+    const [lighter, darker] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+    return (lighter + 0.05) / (darker + 0.05);
+}
+
+function removeIcon() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "icon");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    for (const definition of ["M18 6 6 18", "m6 6 12 12"]) {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", definition);
+        svg.appendChild(path);
+    }
+    return svg;
+}
+
+function randomHex() {
+    return (
+        "#" +
+        Math.floor(Math.random() * 0xffffff)
+            .toString(16)
+            .padStart(6, "0")
+    );
 }
 
 const picker = (() => {
-    const el = document.createElement("div");
-    el.className = "color-picker";
-    el.hidden = true;
+    const element = document.createElement("div");
+    element.className = "color-picker";
+    element.hidden = true;
 
-    const svEl = document.createElement("div");
-    svEl.className = "color-picker__sv";
+    const area = document.createElement("div");
+    area.className = "color-picker__area";
     const canvas = document.createElement("canvas");
     canvas.className = "color-picker__canvas";
     const thumb = document.createElement("div");
-    thumb.className = "color-picker__sv-thumb";
-    svEl.append(canvas, thumb);
+    thumb.className = "color-picker__thumb";
+    area.append(canvas, thumb);
 
-    const hueEl = document.createElement("input");
-    hueEl.type = "range";
-    hueEl.className = "color-picker__hue";
-    hueEl.min = "0";
-    hueEl.max = "359";
-    hueEl.value = "0";
-    hueEl.step = "1";
+    const hueInput = document.createElement("input");
+    hueInput.type = "range";
+    hueInput.className = "color-picker__hue";
+    hueInput.min = "0";
+    hueInput.max = "359";
+    hueInput.value = "0";
+    hueInput.step = "1";
+    hueInput.setAttribute("aria-label", "Hue");
 
-    const hexIn = document.createElement("input");
-    hexIn.type = "text";
-    hexIn.className = "color-picker__hex";
-    hexIn.placeholder = "#000000";
-    hexIn.maxLength = 7;
+    const hexInput = document.createElement("input");
+    hexInput.type = "text";
+    hexInput.className = "color-picker__hex";
+    hexInput.placeholder = "#000000";
+    hexInput.maxLength = 7;
+    hexInput.setAttribute("aria-label", "Hex value");
 
-    el.append(svEl, hueEl, hexIn);
-    document.body.appendChild(el);
+    element.append(area, hueInput, hexInput);
+    document.body.appendChild(element);
 
-    const ctx = canvas.getContext("2d");
-    const SIZE = 192;
-    canvas.width = SIZE;
-    canvas.height = SIZE;
+    const context = canvas.getContext("2d");
+    const size = 192;
+    canvas.width = size;
+    canvas.height = size;
 
     let activeSlot = null;
-    let h = 0,
-        s = 1,
-        v = 1;
+    let hue = 0;
+    let saturation = 1;
+    let brightness = 1;
 
-    function drawSV() {
-        const gH = ctx.createLinearGradient(0, 0, SIZE, 0);
-        gH.addColorStop(0, "white");
-        gH.addColorStop(1, `hsl(${h},100%,50%)`);
-        ctx.fillStyle = gH;
-        ctx.fillRect(0, 0, SIZE, SIZE);
-        const gV = ctx.createLinearGradient(0, 0, 0, SIZE);
-        gV.addColorStop(0, "rgba(0,0,0,0)");
-        gV.addColorStop(1, "rgba(0,0,0,1)");
-        ctx.fillStyle = gV;
-        ctx.fillRect(0, 0, SIZE, SIZE);
+    function drawArea() {
+        const horizontal = context.createLinearGradient(0, 0, size, 0);
+        horizontal.addColorStop(0, "white");
+        horizontal.addColorStop(1, `hsl(${hue}, 100%, 50%)`);
+        context.fillStyle = horizontal;
+        context.fillRect(0, 0, size, size);
+        const vertical = context.createLinearGradient(0, 0, 0, size);
+        vertical.addColorStop(0, "rgba(0, 0, 0, 0)");
+        vertical.addColorStop(1, "rgba(0, 0, 0, 1)");
+        context.fillStyle = vertical;
+        context.fillRect(0, 0, size, size);
     }
 
-    function posThumb() {
-        const r = svEl.getBoundingClientRect();
-        thumb.style.left = `${s * r.width}px`;
-        thumb.style.top = `${(1 - v) * r.height}px`;
+    function positionThumb() {
+        const rect = area.getBoundingClientRect();
+        thumb.style.left = `${saturation * rect.width}px`;
+        thumb.style.top = `${(1 - brightness) * rect.height}px`;
     }
 
-    function hsv2hex(hh, ss, vv) {
-        const i = Math.floor(hh / 60) % 6;
-        const f = hh / 60 - Math.floor(hh / 60);
-        const p = vv * (1 - ss);
-        const q = vv * (1 - f * ss);
-        const t = vv * (1 - (1 - f) * ss);
-        const m = [
-            [vv, t, p],
-            [q, vv, p],
-            [p, vv, t],
-            [p, q, vv],
-            [t, p, vv],
-            [vv, p, q]
-        ][i];
+    function hsvToHex(h, s, v) {
+        const sextant = Math.floor(h / 60) % 6;
+        const fraction = h / 60 - Math.floor(h / 60);
+        const p = v * (1 - s);
+        const q = v * (1 - fraction * s);
+        const t = v * (1 - (1 - fraction) * s);
+        const channels = [
+            [v, t, p],
+            [q, v, p],
+            [p, v, t],
+            [p, q, v],
+            [t, p, v],
+            [v, p, q]
+        ][sextant];
         return (
             "#" +
-            m
-                .map((x) =>
-                    Math.round(x * 255)
+            channels
+                .map((channel) =>
+                    Math.round(channel * 255)
                         .toString(16)
                         .padStart(2, "0")
                 )
@@ -102,26 +132,26 @@ const picker = (() => {
         );
     }
 
-    function hex2hsv(hex) {
+    function hexToHsv(hex) {
         const r = parseInt(hex.slice(1, 3), 16) / 255;
         const g = parseInt(hex.slice(3, 5), 16) / 255;
         const b = parseInt(hex.slice(5, 7), 16) / 255;
-        const max = Math.max(r, g, b),
-            min = Math.min(r, g, b),
-            d = max - min;
-        let hh = 0;
-        if (d) {
-            if (max === r) hh = ((g - b) / d + 6) % 6;
-            else if (max === g) hh = (b - r) / d + 2;
-            else hh = (r - g) / d + 4;
-            hh *= 60;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const delta = max - min;
+        let h = 0;
+        if (delta) {
+            if (max === r) h = ((g - b) / delta + 6) % 6;
+            else if (max === g) h = (b - r) / delta + 2;
+            else h = (r - g) / delta + 4;
+            h *= 60;
         }
-        return { h: hh, s: max ? d / max : 0, v: max };
+        return { h, s: max ? delta / max : 0, v: max };
     }
 
     function commit() {
-        const hex = hsv2hex(h, s, v);
-        hexIn.value = hex;
+        const hex = hsvToHex(hue, saturation, brightness);
+        hexInput.value = hex;
         if (activeSlot) {
             activeSlot.querySelector(".color-slot__input").value = hex;
             activeSlot.querySelector(".color-slot__hex").textContent = hex;
@@ -131,40 +161,41 @@ const picker = (() => {
         rebuildContrast();
     }
 
-    hueEl.addEventListener("input", () => {
-        h = +hueEl.value;
-        drawSV();
+    hueInput.addEventListener("input", () => {
+        hue = Number(hueInput.value);
+        drawArea();
         commit();
     });
 
-    hexIn.addEventListener("input", () => {
-        let val = hexIn.value.trim();
-        if (!val.startsWith("#")) val = "#" + val;
-        if (/^#[0-9a-f]{6}$/i.test(val)) {
-            ({ h, s, v } = hex2hsv(val));
-            hueEl.value = Math.round(h);
-            drawSV();
-            posThumb();
+    hexInput.addEventListener("input", () => {
+        let value = hexInput.value.trim();
+        if (!value.startsWith("#")) value = "#" + value;
+        if (/^#[0-9a-f]{6}$/i.test(value)) {
+            ({ h: hue, s: saturation, v: brightness } = hexToHsv(value));
+            hueInput.value = Math.round(hue);
+            drawArea();
+            positionThumb();
             commit();
         }
     });
 
     let dragging = false;
 
-    function pickAt(e) {
-        const r = svEl.getBoundingClientRect();
-        s = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-        v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height));
-        posThumb();
+    function pickAt(event) {
+        const rect = area.getBoundingClientRect();
+        saturation = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+        brightness = Math.max(0, Math.min(1, 1 - (event.clientY - rect.top) / rect.height));
+        positionThumb();
         commit();
     }
-    svEl.addEventListener("mousedown", (e) => {
+
+    area.addEventListener("mousedown", (event) => {
         dragging = true;
-        pickAt(e);
-        e.preventDefault();
+        pickAt(event);
+        event.preventDefault();
     });
-    document.addEventListener("mousemove", (e) => {
-        if (dragging) pickAt(e);
+    document.addEventListener("mousemove", (event) => {
+        if (dragging) pickAt(event);
     });
     document.addEventListener("mouseup", () => {
         dragging = false;
@@ -173,26 +204,26 @@ const picker = (() => {
     function open(slot) {
         activeSlot = slot;
         const hex = slot.querySelector(".color-slot__input").value;
-        ({ h, s, v } = hex2hsv(hex));
-        hueEl.value = Math.round(h);
-        el.hidden = false;
-        drawSV();
+        ({ h: hue, s: saturation, v: brightness } = hexToHsv(hex));
+        hueInput.value = Math.round(hue);
+        element.hidden = false;
+        drawArea();
 
-        const sr = slot.getBoundingClientRect();
-        const pw = el.offsetWidth || 208;
-        const ph = el.offsetHeight || 260;
-        let left = sr.left;
-        let top = sr.bottom + 6;
-        if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
-        if (top + ph > window.innerHeight - 8) top = sr.top - ph - 6;
-        el.style.left = left + "px";
-        el.style.top = top + "px";
+        const slotRect = slot.getBoundingClientRect();
+        const pickerWidth = element.offsetWidth || 208;
+        const pickerHeight = element.offsetHeight || 260;
+        let left = slotRect.left;
+        let top = slotRect.bottom + 6;
+        if (left + pickerWidth > window.innerWidth - 8) left = window.innerWidth - pickerWidth - 8;
+        if (top + pickerHeight > window.innerHeight - 8) top = slotRect.top - pickerHeight - 6;
+        element.style.left = left + "px";
+        element.style.top = top + "px";
 
-        requestAnimationFrame(posThumb);
+        requestAnimationFrame(positionThumb);
     }
 
     function close() {
-        el.hidden = true;
+        element.hidden = true;
         activeSlot = null;
     }
 
@@ -200,8 +231,8 @@ const picker = (() => {
         if (activeSlot === slot) close();
     }
 
-    document.addEventListener("click", (e) => {
-        if (!el.hidden && !el.contains(e.target) && !e.target.closest(".color-slot__swatch")) {
+    document.addEventListener("click", (event) => {
+        if (!element.hidden && !element.contains(event.target) && !event.target.closest(".color-slot__swatch")) {
             close();
         }
     });
@@ -210,12 +241,12 @@ const picker = (() => {
 })();
 
 function createSlot(hex) {
-    const li = document.createElement("li");
-    li.className = "color-slot";
-    li.setAttribute("draggable", "true");
-    li.style.setProperty("--color", hex);
+    const item = document.createElement("li");
+    item.className = "color-slot";
+    item.setAttribute("draggable", "true");
+    item.style.setProperty("--color", hex);
 
-    const swatch = document.createElement("div");
+    const swatch = document.createElement("span");
     swatch.className = "color-slot__swatch";
 
     const input = document.createElement("input");
@@ -224,44 +255,42 @@ function createSlot(hex) {
     input.value = hex;
     input.className = "color-slot__input";
 
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "color-slot__remove";
-    removeBtn.setAttribute("aria-label", "Remove");
-    const xIcon = document.createElement("i");
-    xIcon.className = "fa-solid fa-xmark";
-    removeBtn.appendChild(xIcon);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "color-slot__remove";
+    remove.setAttribute("aria-label", "Remove color");
+    remove.appendChild(removeIcon());
 
-    swatch.append(input, removeBtn);
+    swatch.append(input, remove);
 
-    const hexBtn = document.createElement("button");
-    hexBtn.type = "button";
-    hexBtn.className = "color-slot__hex";
-    hexBtn.title = "Copy hex value";
-    hexBtn.textContent = hex;
+    const hexButton = document.createElement("button");
+    hexButton.type = "button";
+    hexButton.className = "color-slot__hex";
+    hexButton.setAttribute("aria-label", "Copy hex value");
+    hexButton.textContent = hex;
 
-    li.append(swatch, hexBtn);
-    return li;
+    item.append(swatch, hexButton);
+    return item;
 }
 
-function wireSlot(li) {
-    const input = li.querySelector(".color-slot__input");
-    const hexBtn = li.querySelector(".color-slot__hex");
-    const remove = li.querySelector(".color-slot__remove");
-    const swatch = li.querySelector(".color-slot__swatch");
+function wireSlot(item) {
+    const input = item.querySelector(".color-slot__input");
+    const hexButton = item.querySelector(".color-slot__hex");
+    const remove = item.querySelector(".color-slot__remove");
+    const swatch = item.querySelector(".color-slot__swatch");
 
-    swatch.addEventListener("click", (e) => {
-        if (remove.contains(e.target)) return;
-        picker.open(li);
+    swatch.addEventListener("click", (event) => {
+        if (remove.contains(event.target)) return;
+        picker.open(item);
     });
 
-    hexBtn.addEventListener("click", async () => {
-        if (await copyText(input.value)) window.showToast("Copied " + input.value);
+    hexButton.addEventListener("click", async () => {
+        if (await copyText(input.value)) window.toast("Copied " + input.value, { type: "success" });
     });
 
     remove.addEventListener("click", () => {
-        picker.closeIfActive(li);
-        li.remove();
+        picker.closeIfActive(item);
+        item.remove();
         saveDraft();
         rebuildContrast();
     });
@@ -269,47 +298,42 @@ function wireSlot(li) {
 
 list.querySelectorAll(".color-slot").forEach(wireSlot);
 
-addBtn.addEventListener("click", () => {
-    const hex =
-        "#" +
-        Math.floor(Math.random() * 0xffffff)
-            .toString(16)
-            .padStart(6, "0");
-    const li = createSlot(hex);
-    list.appendChild(li);
-    wireSlot(li);
-    wireDrag(li);
-    picker.open(li);
+addColorButton.addEventListener("click", () => {
+    const item = createSlot(randomHex());
+    list.appendChild(item);
+    wireSlot(item);
+    wireDrag(item);
+    picker.open(item);
     saveDraft();
     rebuildContrast();
 });
 
 let dragged = null;
 
-function wireDrag(li) {
-    li.addEventListener("dragstart", (e) => {
-        dragged = li;
-        e.dataTransfer.effectAllowed = "move";
-        setTimeout(() => li.classList.add("color-slot--dragging"), 0);
+function wireDrag(item) {
+    item.addEventListener("dragstart", (event) => {
+        dragged = item;
+        event.dataTransfer.effectAllowed = "move";
+        setTimeout(() => item.classList.add("color-slot--dragging"), 0);
     });
 
-    li.addEventListener("dragend", () => {
-        li.classList.remove("color-slot--dragging");
-        list.querySelectorAll(".color-slot--over").forEach((el) => el.classList.remove("color-slot--over"));
+    item.addEventListener("dragend", () => {
+        item.classList.remove("color-slot--dragging");
+        list.querySelectorAll(".color-slot--over").forEach((slot) => slot.classList.remove("color-slot--over"));
         dragged = null;
         saveDraft();
     });
 
-    li.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        if (!dragged || dragged === li) return;
-        list.querySelectorAll(".color-slot--over").forEach((el) => el.classList.remove("color-slot--over"));
-        li.classList.add("color-slot--over");
-        const rect = li.getBoundingClientRect();
-        if (e.clientX < rect.left + rect.width / 2) {
-            list.insertBefore(dragged, li);
+    item.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        if (!dragged || dragged === item) return;
+        list.querySelectorAll(".color-slot--over").forEach((slot) => slot.classList.remove("color-slot--over"));
+        item.classList.add("color-slot--over");
+        const rect = item.getBoundingClientRect();
+        if (event.clientX < rect.left + rect.width / 2) {
+            list.insertBefore(dragged, item);
         } else {
-            list.insertBefore(dragged, li.nextSibling);
+            list.insertBefore(dragged, item.nextSibling);
         }
     });
 }
@@ -317,46 +341,51 @@ function wireDrag(li) {
 list.querySelectorAll(".color-slot").forEach(wireDrag);
 
 function getColors() {
-    return [...list.querySelectorAll(".color-slot__input")].map((p) => p.value);
+    return [...list.querySelectorAll(".color-slot__input")].map((input) => input.value);
 }
 
 function getPaletteName() {
-    return document.querySelector(".palette-editor__name").value || "palette";
+    return nameInput.value || "palette";
 }
 
-const exportCssBtn = document.getElementById("exportCssBtn");
-const exportJsonBtn = document.getElementById("exportJsonBtn");
-
-exportCssBtn?.addEventListener("click", async () => {
-    const slug = getPaletteName()
+function slugify(name) {
+    return name
         .toLowerCase()
         .replace(/\s+/g, "-")
         .replace(/[^a-z0-9-]/g, "");
+}
+
+const copyCssButton = document.getElementById("copyCssButton");
+const copyJsonButton = document.getElementById("copyJsonButton");
+
+copyCssButton?.addEventListener("click", async () => {
+    const slug = slugify(getPaletteName());
     const vars = getColors()
-        .map((c, i) => `  --color-${slug}-${i + 1}: ${c};`)
+        .map((hex, index) => `  --color-${slug}-${index + 1}: ${hex};`)
         .join("\n");
-    if (await copyText(`:root {\n${vars}\n}`)) window.showToast("CSS copied");
+    if (await copyText(`:root {\n${vars}\n}`)) window.toast("CSS copied", { type: "success" });
 });
 
-exportJsonBtn?.addEventListener("click", async () => {
-    const obj = { name: getPaletteName(), colors: getColors() };
-    if (await copyText(JSON.stringify(obj, null, 2))) window.showToast("JSON copied");
+copyJsonButton?.addEventListener("click", async () => {
+    const payload = { name: getPaletteName(), colors: getColors() };
+    if (await copyText(JSON.stringify(payload, null, 2))) window.toast("JSON copied", { type: "success" });
 });
 
-const contrastBtn = document.getElementById("contrastBtn");
+const contrastButton = document.getElementById("contrastButton");
 const contrastPanel = document.getElementById("contrastPanel");
 const contrastInner = document.getElementById("contrastInner");
+const badgeText = { aaa: "AAA", aa: "AA", large: "AA large", fail: "fail" };
 
-function makeContrastHeader(color, label) {
-    const th = document.createElement("th");
+function contrastHeader(color, label) {
+    const cell = document.createElement("th");
     const swatch = document.createElement("span");
     swatch.className = "contrast-swatch";
-    swatch.style.background = color;
-    const hexSpan = document.createElement("span");
-    hexSpan.className = "contrast-hex";
-    hexSpan.textContent = label;
-    th.append(swatch, document.createElement("br"), hexSpan);
-    return th;
+    swatch.style.setProperty("--color", color);
+    const name = document.createElement("span");
+    name.className = "contrast-label";
+    name.textContent = label;
+    cell.append(swatch, document.createElement("br"), name);
+    return cell;
 }
 
 function buildContrastTable() {
@@ -364,58 +393,57 @@ function buildContrastTable() {
     contrastInner.textContent = "";
 
     if (!palette.length) {
-        const p = document.createElement("p");
-        p.className = "contrast-empty";
-        p.textContent = "No colors yet.";
-        contrastInner.appendChild(p);
+        const message = document.createElement("p");
+        message.className = "contrast-empty";
+        message.textContent = "No colors yet.";
+        contrastInner.appendChild(message);
         return;
     }
 
-    const cols = [...palette, "#000000", "#ffffff"];
+    const columns = [...palette, "#000000", "#ffffff"];
     const labels = [...palette, "Black", "White"];
-    const BADGE = { aaa: "AAA", aa: "AA", large: "AA (lg only)", fail: "✗" };
 
     const table = document.createElement("table");
     table.className = "contrast-table";
 
-    const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    headerRow.appendChild(document.createElement("th"));
-    for (let j = 0; j < cols.length; j++) {
-        headerRow.appendChild(makeContrastHeader(cols[j], labels[j]));
+    const head = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.appendChild(document.createElement("th"));
+    for (let column = 0; column < columns.length; column++) {
+        headRow.appendChild(contrastHeader(columns[column], labels[column]));
     }
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
+    head.appendChild(headRow);
+    table.appendChild(head);
 
-    const tbody = document.createElement("tbody");
-    for (let i = 0; i < cols.length; i++) {
-        const row = document.createElement("tr");
-        row.appendChild(makeContrastHeader(cols[i], labels[i]));
+    const body = document.createElement("tbody");
+    for (let row = 0; row < columns.length; row++) {
+        const tableRow = document.createElement("tr");
+        tableRow.appendChild(contrastHeader(columns[row], labels[row]));
 
-        for (let j = 0; j < cols.length; j++) {
-            const td = document.createElement("td");
-            if (i === j) {
-                td.className = "contrast-cell--skip";
-                td.textContent = "—";
+        for (let column = 0; column < columns.length; column++) {
+            const cell = document.createElement("td");
+            if (row === column) {
+                cell.className = "contrast-cell contrast-cell--skip";
+                cell.textContent = "-";
             } else {
-                const ratio = contrastRatio(cols[i], cols[j]);
-                let cls = "fail";
-                if (ratio >= 7) cls = "aaa";
-                else if (ratio >= 4.5) cls = "aa";
-                else if (ratio >= 3) cls = "large";
-                td.className = `contrast-cell contrast-cell--${cls}`;
-                td.title = `${ratio.toFixed(2)}:1`;
-                td.textContent = ratio.toFixed(2);
+                const ratio = contrastRatio(columns[row], columns[column]);
+                let grade = "fail";
+                if (ratio >= 7) grade = "aaa";
+                else if (ratio >= 4.5) grade = "aa";
+                else if (ratio >= 3) grade = "large";
+                cell.className = `contrast-cell contrast-cell--${grade}`;
+                cell.title = `${ratio.toFixed(2)}:1`;
+                cell.textContent = ratio.toFixed(2);
                 const badge = document.createElement("span");
-                badge.className = "contrast-badge";
-                badge.textContent = BADGE[cls];
-                td.append(document.createElement("br"), badge);
+                badge.className = "contrast-grade";
+                badge.textContent = badgeText[grade];
+                cell.append(document.createElement("br"), badge);
             }
-            row.appendChild(td);
+            tableRow.appendChild(cell);
         }
-        tbody.appendChild(row);
+        body.appendChild(tableRow);
     }
-    table.appendChild(tbody);
+    table.appendChild(body);
     contrastInner.appendChild(table);
 }
 
@@ -423,58 +451,54 @@ rebuildContrast = () => {
     if (!contrastPanel.hidden) buildContrastTable();
 };
 
-contrastBtn.addEventListener("click", () => {
+contrastButton.addEventListener("click", () => {
     contrastPanel.hidden = !contrastPanel.hidden;
     if (!contrastPanel.hidden) buildContrastTable();
 });
 
 if (isNewPalette) {
-    const DRAFT_KEY = "huebox-draft";
+    const draftKey = "huebox-draft";
 
     saveDraft = function () {
         localStorage.setItem(
-            DRAFT_KEY,
-            JSON.stringify({
-                name: document.querySelector(".palette-editor__name").value,
-                colors: getColors()
-            })
+            draftKey,
+            JSON.stringify({ name: nameInput.value, colors: getColors() })
         );
     };
 
-    (function () {
-        const raw = localStorage.getItem(DRAFT_KEY);
-        if (!raw) return;
+    const raw = localStorage.getItem(draftKey);
+    if (raw) {
         try {
             const { name, colors } = JSON.parse(raw);
-            if (name) document.querySelector(".palette-editor__name").value = name;
+            if (name) nameInput.value = name;
             if (colors?.length) {
                 list.innerHTML = "";
                 for (const hex of colors) {
-                    const li = createSlot(hex);
-                    list.appendChild(li);
-                    wireSlot(li);
-                    wireDrag(li);
+                    const item = createSlot(hex);
+                    list.appendChild(item);
+                    wireSlot(item);
+                    wireDrag(item);
                 }
             }
-        } catch {}
-    })();
+        } catch {
+            localStorage.removeItem(draftKey);
+        }
+    }
 
-    document.querySelector(".palette-editor__name").addEventListener("input", saveDraft);
-
-    document.getElementById("palette-editor").addEventListener("submit", () => {
-        localStorage.removeItem(DRAFT_KEY);
+    nameInput.addEventListener("input", saveDraft);
+    document.getElementById("paletteEditor").addEventListener("submit", () => {
+        localStorage.removeItem(draftKey);
     });
 }
 
-const isPublicInput = document.querySelector("[name='is_public']");
-const visIcon = document.querySelector(".toggle__vis-icon");
-const visText = document.querySelector(".toggle__vis-text");
+const isPublicInput = document.getElementById("isPublic");
+const visibilityHint = document.getElementById("visibilityHint");
 
 function updateVisibility() {
-    const pub = isPublicInput.checked;
-    visIcon.classList.remove("fa-globe", "fa-lock");
-    visIcon.classList.add(pub ? "fa-globe" : "fa-lock");
-    visText.textContent = pub ? "Public" : "Private";
+    visibilityHint.textContent = isPublicInput.checked
+        ? "Anyone can view and fork this palette"
+        : "Only you can see this palette";
 }
+
 updateVisibility();
 isPublicInput.addEventListener("change", updateVisibility);

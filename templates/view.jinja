@@ -1,93 +1,80 @@
 {% extends "base.jinja" %}
 
+{% from "_macros.jinja" import icon, color_count %}
+
 {% block title %}{{ palette.name }}{% endblock %}
 
 {% block extra_headers %}
-    {{ super() }}
     <script src="{{ url_for('static', filename='scripts/copy-text.js') }}" defer></script>
     <script src="{{ url_for('static', filename='scripts/view.js') }}" defer></script>
 {% endblock %}
 
 {% block main %}
-    <div class="page-header">
-        <h1 class="page-header__title">{{ palette.name }}</h1>
+    <div class="page-head">
+        <h1>{{ palette.name }}</h1>
     </div>
 
-    <div class="palette-view__meta">
-        {% if palette.owner.avatar_url %}
-            <img src="{{ palette.owner.avatar_url }}"
-                 alt="{{ palette.owner.login }}"
-                 class="palette-card__avatar">
-        {% endif %}
-        <span>by {{ palette.owner.login }}</span>
-        <span class="palette-view__dot" aria-hidden="true">·</span>
-        <span>{{ palette.colors | length }} color{{ 's' if palette.colors | length != 1 }}</span>
-        <span class="palette-view__dot" aria-hidden="true">·</span>
-        <span class="palette-view__visibility {% if palette.is_public %}palette-view__visibility--public{% else %}palette-view__visibility--private{% endif %}">
-            <i class="fa-solid {% if palette.is_public %}fa-globe{% else %}fa-lock{% endif %}"
-               aria-hidden="true"></i>
-            {{ 'Public' if palette.is_public else 'Private' }}
+    <p class="palette-meta">
+        <span class="avatar-label">
+            {% if palette.owner.avatar_url %}
+                <img src="{{ palette.owner.avatar_url }}"
+                     alt=""
+                     class="avatar avatar--sm avatar--round" />
+            {% endif %}
+            <span class="avatar-label__name">{{ palette.owner.login }}</span>
         </span>
-    </div>
+        <span class="palette-meta__sep" aria-hidden="true">/</span>
+        <span>{{ color_count(palette.colors) }}</span>
+        <span class="palette-meta__sep" aria-hidden="true">/</span>
+        {% if palette.is_public %}
+            <span class="palette-meta__visibility">{{ icon("globe") }} Public</span>
+        {% else %}
+            <span class="palette-meta__visibility">{{ icon("lock") }} Private</span>
+        {% endif %}
+    </p>
 
-    <div class="palette-view__strip">
+    <div class="palette-strip">
         {% for color in palette.colors %}
-            <button class="palette-view__swatch"
-                    type="button"
+            <button type="button"
+                    class="palette-strip__swatch"
                     style="--color: {{ color.hex_value }}"
                     data-hex="{{ color.hex_value }}"
-                    title="Copy {{ color.hex_value }}">
-                <span class="palette-view__swatch-info">
-                    <span class="palette-view__swatch-hex">{{ color.hex_value }}</span>
-                </span>
+                    aria-label="Copy {{ color.hex_value }}">
+                <span class="palette-strip__hex">{{ color.hex_value }}</span>
             </button>
         {% endfor %}
     </div>
 
-    <div class="palette-view__actions">
-        {% if current_user %}
-            {% if current_user.id != palette.user_id %}
-                <button type="button"
-                        class="like-btn {% if user_liked %}like-btn--liked{% endif %}"
-                        hx-post="{{ url_for('toggle_like', id=palette.id) }}"
-                        hx-swap="none">
-                    <i class="fa-solid fa-heart"></i>
-                    {{ palette.like_count }}
-                </button>
-                <button type="button"
-                        class="btn btn--ghost"
-                        hx-post="{{ url_for('fork_palette', id=palette.id) }}"
-                        hx-swap="none">Fork</button>
-            {% else %}
-                <span class="like-btn like-btn--static">
-                    <i class="fa-solid fa-heart"></i>
-                    {{ palette.like_count }}
-                </span>
-                <a href="{{ url_for('edit_palette', id=palette.id) }}"
-                   class="btn btn--ghost">
-                    <i class="fa-solid fa-pen"></i> Edit
-                </a>
-            {% endif %}
+    <div class="cluster palette-actions">
+        {% if current_user and current_user.id != palette.user_id %}
+            <button type="button"
+                    class="button button--ghost like-button {% if user_liked %}is-liked{% endif %}"
+                    hx-post="{{ url_for('toggle_like', id=palette.id) }}"
+                    hx-swap="none"
+                    aria-pressed="{{ 'true' if user_liked else 'false' }}">
+                {{ icon("heart") }} <span>{{ palette.like_count }}</span>
+            </button>
+            <button type="button"
+                    class="button button--ghost"
+                    hx-post="{{ url_for('fork_palette', id=palette.id) }}"
+                    hx-swap="none">Fork</button>
+        {% elif current_user and current_user.id == palette.user_id %}
+            <span class="like-count">{{ icon("heart") }} {{ palette.like_count }}</span>
+            <a href="{{ url_for('edit_palette', id=palette.id) }}"
+               class="button button--ghost">{{ icon("pencil") }} Edit</a>
         {% else %}
-            <span class="like-btn like-btn--static">
-                <i class="fa-solid fa-heart"></i>
-                {{ palette.like_count }}
-            </span>
-            <a href="{{ url_for('login') }}" class="btn btn--ghost">
-                <i class="fa-brands fa-github"></i> Sign in to fork
-            </a>
+            <span class="like-count">{{ icon("heart") }} {{ palette.like_count }}</span>
+            <a href="{{ url_for('login') }}" class="button button--ghost">{{ icon("log-in") }} Sign in to fork</a>
         {% endif %}
 
-        <button type="button" class="btn btn--ghost" id="copyLinkBtn">
-            <i class="fa-solid fa-link"></i> Copy link
-        </button>
-        <button type="button" class="btn btn--ghost" id="viewCssBtn">Copy CSS</button>
-        <button type="button" class="btn btn--ghost" id="viewJsonBtn">Copy JSON</button>
+        <button type="button" class="button button--ghost" id="copyLinkButton">{{ icon("link") }} Copy link</button>
+        <button type="button" class="button button--ghost" id="copyCssButton">Copy CSS</button>
+        <button type="button" class="button button--ghost" id="copyJsonButton">Copy JSON</button>
     </div>
 
     {# djlint:off #}
     <script>
-        const colors = {{ palette.colors | map(attribute='hex_value') | list | tojson }};
+        const paletteColors = {{ palette.colors | map(attribute='hex_value') | list | tojson }};
         const paletteName = {{ palette.name | tojson }};
 </script>
     {# djlint:on #}

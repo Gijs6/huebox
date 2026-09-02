@@ -1,24 +1,19 @@
 const canvas = document.getElementById("splashCanvas");
-const ctx = canvas.getContext("2d");
+const context = canvas.getContext("2d");
 let chips = [];
 let mouse = { x: -9999, y: -9999 };
 let blasts = [];
-const splashCenter = document.querySelector(".splash__center");
+const center = document.querySelector(".splash__center");
 let repelRect = null;
 
-const BLAST_EXPAND = 9;
-const BLAST_RING_WIDTH = 55;
-const BLAST_MAX_RADIUS = 500;
-const BLAST_STRENGTH = 3.0;
+const blastExpand = 9;
+const blastRingWidth = 55;
+const blastMaxRadius = 500;
+const blastStrength = 3;
 
 const colorLabel = document.createElement("div");
-colorLabel.style.cssText = ["position:fixed", "pointer-events:none", "background:var(--color-gray-9)", "color:var(--color-white)", "font-family:var(--font-family-mono)", "font-size:var(--font-size-xs)", "font-weight:var(--font-weight-medium)", "padding:var(--spacing-xs) var(--spacing-sm)", "border-radius:var(--radius)", "display:none", "z-index:100", "white-space:nowrap", "border-left-width:3px", "border-left-style:solid"].join(";");
+colorLabel.className = "splash__color-label";
 document.body.appendChild(colorLabel);
-
-const messagesContainer = document.createElement("div");
-messagesContainer.className = "messages-container";
-messagesContainer.setAttribute("aria-live", "polite");
-document.body.appendChild(messagesContainer);
 
 function makeChip() {
     const color = `#${Math.floor(Math.random() * 0xffffff)
@@ -44,7 +39,7 @@ function makeChip() {
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    if (splashCenter) repelRect = splashCenter.getBoundingClientRect();
+    if (center) repelRect = center.getBoundingClientRect();
 }
 
 function init() {
@@ -52,9 +47,9 @@ function init() {
     chips = Array.from({ length: 70 }, makeChip);
 }
 
-function hitTest(chip, mouseX, mouseY) {
-    const dx = mouseX - chip.x;
-    const dy = mouseY - chip.y;
+function hitTest(chip, x, y) {
+    const dx = x - chip.x;
+    const dy = y - chip.y;
     const cos = Math.cos(-chip.rotation);
     const sin = Math.sin(-chip.rotation);
     const localX = dx * cos - dy * sin;
@@ -66,44 +61,44 @@ function applyBlastForce(chip) {
     for (const blast of blasts) {
         const dx = chip.x - blast.x;
         const dy = chip.y - blast.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist === 0) continue;
-        const ringDelta = Math.abs(dist - blast.radius);
-        if (ringDelta < BLAST_RING_WIDTH) {
-            const falloff = 1 - ringDelta / BLAST_RING_WIDTH;
-            chip.vx += (dx / dist) * BLAST_STRENGTH * falloff;
-            chip.vy += (dy / dist) * BLAST_STRENGTH * falloff;
+        const distance = Math.hypot(dx, dy);
+        if (distance === 0) continue;
+        const ringDelta = Math.abs(distance - blast.radius);
+        if (ringDelta < blastRingWidth) {
+            const falloff = 1 - ringDelta / blastRingWidth;
+            chip.vx += (dx / distance) * blastStrength * falloff;
+            chip.vy += (dy / distance) * blastStrength * falloff;
         }
     }
 }
 
 function applyCenterRepel(chip) {
     if (!repelRect) return;
-    const REPEL_MARGIN = 90;
-    const REPEL_STRENGTH = 0.45;
+    const margin = 90;
+    const strength = 0.45;
 
-    const cx = Math.max(repelRect.left, Math.min(repelRect.right, chip.x));
-    const cy = Math.max(repelRect.top, Math.min(repelRect.bottom, chip.y));
-    const dx = chip.x - cx;
-    const dy = chip.y - cy;
-    const dist = Math.hypot(dx, dy);
+    const clampedX = Math.max(repelRect.left, Math.min(repelRect.right, chip.x));
+    const clampedY = Math.max(repelRect.top, Math.min(repelRect.bottom, chip.y));
+    const dx = chip.x - clampedX;
+    const dy = chip.y - clampedY;
+    const distance = Math.hypot(dx, dy);
 
-    if (dist === 0) {
-        const rcx = (repelRect.left + repelRect.right) / 2;
-        const rcy = (repelRect.top + repelRect.bottom) / 2;
-        const ex = chip.x - rcx || 1;
-        const ey = chip.y - rcy;
-        const ed = Math.hypot(ex, ey) || 1;
-        chip.vx += (ex / ed) * REPEL_STRENGTH * 2;
-        chip.vy += (ey / ed) * REPEL_STRENGTH * 2;
-    } else if (dist < REPEL_MARGIN) {
-        const force = (1 - dist / REPEL_MARGIN) * REPEL_STRENGTH;
-        chip.vx += (dx / dist) * force;
-        chip.vy += (dy / dist) * force;
+    if (distance === 0) {
+        const rectCenterX = (repelRect.left + repelRect.right) / 2;
+        const rectCenterY = (repelRect.top + repelRect.bottom) / 2;
+        const escapeX = chip.x - rectCenterX || 1;
+        const escapeY = chip.y - rectCenterY;
+        const escapeDistance = Math.hypot(escapeX, escapeY) || 1;
+        chip.vx += (escapeX / escapeDistance) * strength * 2;
+        chip.vy += (escapeY / escapeDistance) * strength * 2;
+    } else if (distance < margin) {
+        const force = (1 - distance / margin) * strength;
+        chip.vx += (dx / distance) * force;
+        chip.vy += (dy / distance) * force;
     }
 }
 
-function updateChip(chip, isHovered) {
+function updateChip(chip, hovered) {
     chip.wander += chip.wanderSpeed + (Math.random() - 0.5) * 0.004;
     chip.vx += Math.cos(chip.wander) * 0.012;
     chip.vy += Math.sin(chip.wander) * 0.012;
@@ -112,13 +107,13 @@ function updateChip(chip, isHovered) {
     applyCenterRepel(chip);
 
     const speed = Math.hypot(chip.vx, chip.vy);
-    const maxSpeed = isHovered ? 2 : 6.0;
+    const maxSpeed = hovered ? 2 : 6;
     if (speed > maxSpeed) {
         chip.vx = (chip.vx / speed) * maxSpeed;
         chip.vy = (chip.vy / speed) * maxSpeed;
     }
-    chip.vx *= isHovered ? 0.92 : 0.992;
-    chip.vy *= isHovered ? 0.92 : 0.992;
+    chip.vx *= hovered ? 0.92 : 0.992;
+    chip.vy *= hovered ? 0.92 : 0.992;
 
     chip.rotationSpeed *= 0.97;
     if (Math.abs(chip.rotationSpeed) > 0.03) chip.rotationSpeed = Math.sign(chip.rotationSpeed) * 0.03;
@@ -133,97 +128,93 @@ function updateChip(chip, isHovered) {
     else if (chip.y > canvas.height + chip.size) chip.y = -chip.size;
 }
 
-function drawChip(chip, isHovered) {
-    ctx.save();
-    ctx.globalAlpha = chip.alpha;
-    ctx.translate(chip.x, chip.y);
-    ctx.rotate(chip.rotation);
-    ctx.fillStyle = chip.color;
-    ctx.beginPath();
-    ctx.roundRect(-chip.size / 2, -chip.size / 2, chip.size, chip.size, chip.size * 0.2);
-    ctx.fill();
-    ctx.restore();
+function drawChip(chip) {
+    context.save();
+    context.globalAlpha = chip.alpha;
+    context.translate(chip.x, chip.y);
+    context.rotate(chip.rotation);
+    context.fillStyle = chip.color;
+    context.beginPath();
+    context.roundRect(-chip.size / 2, -chip.size / 2, chip.size, chip.size, chip.size * 0.2);
+    context.fill();
+    context.restore();
 }
 
-function showToast(msg) {
-    const el = document.createElement("div");
-    el.className = "toast";
-    el.textContent = msg;
-    messagesContainer.appendChild(el);
-    requestAnimationFrame(() => el.classList.add("toast--visible"));
-    setTimeout(() => {
-        el.classList.remove("toast--visible");
-        setTimeout(() => el.remove(), 200);
-    }, 1600);
+function copyHex(hex) {
+    const done = () => window.toast(`Copied ${hex}`, { type: "success" });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(hex).then(done, () => {});
+        return;
+    }
+    const field = document.createElement("textarea");
+    field.value = hex;
+    field.style.position = "fixed";
+    field.style.opacity = "0";
+    document.body.appendChild(field);
+    field.select();
+    try {
+        document.execCommand("copy");
+        done();
+    } catch {
+        /* clipboard unavailable */
+    }
+    field.remove();
 }
 
 function frame() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    context.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let i = blasts.length - 1; i >= 0; i--) {
-        blasts[i].radius += BLAST_EXPAND;
-        if (blasts[i].radius > BLAST_MAX_RADIUS) blasts.splice(i, 1);
+    for (let index = blasts.length - 1; index >= 0; index--) {
+        blasts[index].radius += blastExpand;
+        if (blasts[index].radius > blastMaxRadius) blasts.splice(index, 1);
     }
 
     let hoveredChip = null;
-    for (let i = chips.length - 1; i >= 0; i--) {
-        if (hitTest(chips[i], mouse.x, mouse.y)) {
-            hoveredChip = chips[i];
+    for (let index = chips.length - 1; index >= 0; index--) {
+        if (hitTest(chips[index], mouse.x, mouse.y)) {
+            hoveredChip = chips[index];
             break;
         }
     }
 
     if (hoveredChip) {
         colorLabel.textContent = hoveredChip.color.toUpperCase();
-        colorLabel.style.display = "block";
+        colorLabel.classList.add("is-active");
         colorLabel.style.left = mouse.x + 16 + "px";
         colorLabel.style.top = mouse.y - 12 + "px";
-        colorLabel.style.borderLeftColor = hoveredChip.color;
+        colorLabel.style.borderInlineStartColor = hoveredChip.color;
     } else {
-        colorLabel.style.display = "none";
+        colorLabel.classList.remove("is-active");
     }
 
     for (const chip of chips) {
-        const isHovered = chip === hoveredChip;
-        updateChip(chip, isHovered);
-        drawChip(chip, isHovered);
+        updateChip(chip, chip === hoveredChip);
+        drawChip(chip);
     }
 
     requestAnimationFrame(frame);
 }
 
-canvas.addEventListener("mousemove", (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
+canvas.addEventListener("mousemove", (event) => {
+    mouse.x = event.clientX;
+    mouse.y = event.clientY;
 });
 canvas.addEventListener("mouseleave", () => {
     mouse.x = -9999;
     mouse.y = -9999;
 });
-canvas.addEventListener("click", (e) => {
+canvas.addEventListener("click", (event) => {
     let clicked = null;
-    for (let i = chips.length - 1; i >= 0; i--) {
-        if (hitTest(chips[i], mouse.x, mouse.y)) {
-            clicked = chips[i];
+    for (let index = chips.length - 1; index >= 0; index--) {
+        if (hitTest(chips[index], mouse.x, mouse.y)) {
+            clicked = chips[index];
             break;
         }
     }
     if (clicked) {
-        const hex = clicked.color.toUpperCase();
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(hex).then(() => showToast(`Copied ${hex}`));
-        } else {
-            const ta = document.createElement("textarea");
-            ta.value = hex;
-            ta.style.cssText = "position:fixed;opacity:0";
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand("copy");
-            document.body.removeChild(ta);
-            showToast(`Copied ${hex}`);
-        }
+        copyHex(clicked.color.toUpperCase());
     } else {
-        blasts.push({ x: e.clientX, y: e.clientY, radius: 0 });
+        blasts.push({ x: event.clientX, y: event.clientY, radius: 0 });
     }
 });
 
@@ -245,10 +236,9 @@ window.addEventListener("resize", () => {
 init();
 frame();
 
-const titleLetters = document.querySelectorAll(".splash__title-letter");
-const randColor = () => `rgb(${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)})`;
-titleLetters.forEach((letter) => {
+const randomColor = () => `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+document.querySelectorAll(".splash__letter").forEach((letter) => {
     letter.addEventListener("mouseenter", () => {
-        letter.style.color = randColor();
+        letter.style.color = randomColor();
     });
 });

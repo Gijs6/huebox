@@ -1,0 +1,23 @@
+{% macro icon(name, cls="") -%}
+    <svg class="icon{% if cls %} {{ cls }}{% endif %}"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         aria-hidden="true">
+        {% include "icons/" ~ name ~ ".svg" %}
+
+    </svg>
+{%- endmacro %}
+
+{% macro swatches(colors) -%}
+    <span class="swatch-strip">
+        {% for color in colors -%}<span class="swatch-strip__cell" style="--color: {{ color.hex_value }}"></span>{%- endfor %}
+        </span>
+    {%- endmacro %}
+
+    {% macro color_count(colors) -%}
+        {{ colors | length }} color{{ 's' if colors | length != 1 }}
+    {%- endmacro %}
