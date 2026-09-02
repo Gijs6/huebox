@@ -460,10 +460,7 @@ if (isNewPalette) {
     const draftKey = "huebox-draft";
 
     saveDraft = function () {
-        localStorage.setItem(
-            draftKey,
-            JSON.stringify({ name: nameInput.value, colors: getColors() })
-        );
+        localStorage.setItem(draftKey, JSON.stringify({ name: nameInput.value, colors: getColors() }));
     };
 
     const raw = localStorage.getItem(draftKey);
@@ -495,9 +492,7 @@ const isPublicInput = document.getElementById("isPublic");
 const visibilityHint = document.getElementById("visibilityHint");
 
 function updateVisibility() {
-    visibilityHint.textContent = isPublicInput.checked
-        ? "Anyone can view and fork this palette"
-        : "Only you can see this palette";
+    visibilityHint.textContent = isPublicInput.checked ? "Anyone can view and fork this palette" : "Only you can see this palette";
 }
 
 updateVisibility();
