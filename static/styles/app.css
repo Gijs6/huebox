@@ -556,11 +556,3 @@
     color: var(--bad-text);
     background: var(--bad-wash);
 }
-
-.error__code {
-    margin-block-end: var(--sp-sm);
-    font-family: var(--font-mono);
-    font-size: var(--t-4);
-    line-height: 1;
-    color: var(--faint);
-}
