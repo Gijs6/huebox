@@ -267,7 +267,7 @@ function wireSlot(item) {
     });
 
     hexButton.addEventListener("click", async () => {
-        if (await copyText(input.value)) window.toast("Copied " + input.value, { type: "success" });
+        if (await copyText(input.value)) window.toast("Copied " + input.value + ".", { type: "success" });
     });
 
     remove.addEventListener("click", () => {
@@ -345,12 +345,12 @@ copyCssButton?.addEventListener("click", async () => {
     const vars = getColors()
         .map((hex, index) => `  --color-${slug}-${index + 1}: ${hex};`)
         .join("\n");
-    if (await copyText(`:root {\n${vars}\n}`)) window.toast("CSS copied", { type: "success" });
+    if (await copyText(`:root {\n${vars}\n}`)) window.toast("CSS copied.", { type: "success" });
 });
 
 copyJsonButton?.addEventListener("click", async () => {
     const payload = { name: getPaletteName(), colors: getColors() };
-    if (await copyText(JSON.stringify(payload, null, 2))) window.toast("JSON copied", { type: "success" });
+    if (await copyText(JSON.stringify(payload, null, 2))) window.toast("JSON copied.", { type: "success" });
 });
 
 const contrastButton = document.getElementById("contrastButton");
