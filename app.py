@@ -238,7 +238,7 @@ def submit_palette(id):
         db.session.add(Color(palette_id=p.id, hex_value=hex_value, position=index))
 
     db.session.commit()
-    flash("Saved.", "success")
+    flash("Palette saved.", "success")
     return smart_redirect(url_for("view_palette", id=p.id))
 
 
