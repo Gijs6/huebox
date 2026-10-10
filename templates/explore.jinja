@@ -28,9 +28,7 @@
                                     <button type="button"
                                             class="btn btn--sm"
                                             hx-post="{{ url_for('toggle_like', id=palette.id) }}"
-                                            hx-swap="none">
-                                        {{ "Unlike" if palette.id in liked_ids else "Like" }} ({{ palette.like_count }})
-                                    </button>
+                                            hx-swap="none">{{ "Unlike" if palette.id in liked_ids else "Like" }} ({{ palette.like_count }})</button>
                                     <button type="button"
                                             class="btn btn--sm"
                                             hx-post="{{ url_for('fork_palette', id=palette.id) }}"
@@ -47,13 +45,6 @@
     {% else %}
         <div class="empty">
             <p class="empty__title">No public palettes yet</p>
-            <p>
-                {% if current_user %}
-                    Make one of your palettes public and it will be featured here.
-                {% else %}
-                    <a href="{{ url_for('login') }}">Sign in</a> to create and share palettes.
-                {% endif %}
-            </p>
         </div>
     {% endif %}
 {% endblock %}
