@@ -1,6 +1,6 @@
 {% extends "base.jinja" %}
 
-{% from "_macros.jinja" import icon, color_count %}
+{% from "_macros.jinja" import color_count, owner %}
 
 {% block title %}{{ palette.name }}{% endblock %}
 
@@ -9,27 +9,17 @@
     <script src="{{ url_for('static', filename='scripts/view.js') }}" defer></script>
 {% endblock %}
 
-{% block main %}
+{% block content %}
     <div class="page-head">
         <h1>{{ palette.name }}</h1>
     </div>
 
     <p class="palette-meta">
-        <span class="avatar-label">
-            {% if palette.owner.avatar_url %}
-                <img src="{{ palette.owner.avatar_url }}"
-                     alt=""
-                     class="avatar avatar--sm avatar--round" />
-            {% endif %}
-            <span class="avatar-label__name">{{ palette.owner.login }}</span>
-        </span>
-        <span class="palette-meta__sep" aria-hidden="true">/</span>
-        <span>{{ color_count(palette.colors) }}</span>
-        <span class="palette-meta__sep" aria-hidden="true">/</span>
+        {{ owner(palette.owner) }}, {{ color_count(palette.colors) }},
         {% if palette.is_public %}
-            <span class="palette-meta__visibility">{{ icon("globe") }} Public</span>
+            <span class="status status--ok">Public</span>
         {% else %}
-            <span class="palette-meta__visibility">{{ icon("lock") }} Private</span>
+            <span class="status">Private</span>
         {% endif %}
     </p>
 
@@ -45,37 +35,34 @@
         {% endfor %}
     </div>
 
-    <div class="cluster palette-actions">
+    <div class="form__actions palette-actions">
         {% if current_user and current_user.id != palette.user_id %}
             <button type="button"
-                    class="button button--ghost like-button {% if user_liked %}is-liked{% endif %}"
+                    class="btn"
                     hx-post="{{ url_for('toggle_like', id=palette.id) }}"
-                    hx-swap="none"
-                    aria-pressed="{{ 'true' if user_liked else 'false' }}">
-                {{ icon("heart") }} <span>{{ palette.like_count }}</span>
-            </button>
+                    hx-swap="none">{{ "Unlike" if user_liked else "Like" }} ({{ palette.like_count }})</button>
             <button type="button"
-                    class="button button--ghost"
+                    class="btn"
                     hx-post="{{ url_for('fork_palette', id=palette.id) }}"
                     hx-swap="none">Fork</button>
         {% elif current_user and current_user.id == palette.user_id %}
-            <span class="like-count">{{ icon("heart") }} {{ palette.like_count }}</span>
-            <a href="{{ url_for('edit_palette', id=palette.id) }}"
-               class="button button--ghost">{{ icon("pencil") }} Edit</a>
+            <a href="{{ url_for('edit_palette', id=palette.id) }}" class="btn">Edit</a>
         {% else %}
-            <span class="like-count">{{ icon("heart") }} {{ palette.like_count }}</span>
-            <a href="{{ url_for('login') }}" class="button button--ghost">{{ icon("log-in") }} Sign in to fork</a>
+            <a href="{{ url_for('login') }}" class="btn">Sign in to fork</a>
         {% endif %}
-
-        <button type="button" class="button button--ghost" id="copyLinkButton">{{ icon("link") }} Copy link</button>
-        <button type="button" class="button button--ghost" id="copyCssButton">Copy CSS</button>
-        <button type="button" class="button button--ghost" id="copyJsonButton">Copy JSON</button>
+        <button type="button" class="btn" id="copyLinkButton">Copy link</button>
+        <button type="button" class="btn" id="copyCssButton">Copy CSS</button>
+        <button type="button" class="btn" id="copyJsonButton">Copy JSON</button>
     </div>
+
+    {% if not (current_user and current_user.id != palette.user_id) %}
+        <p class="muted">{{ palette.like_count }} like{{ 's' if palette.like_count != 1 }}</p>
+    {% endif %}
 
     {# djlint:off #}
     <script>
         const paletteColors = {{ palette.colors | map(attribute='hex_value') | list | tojson }};
         const paletteName = {{ palette.name | tojson }};
-</script>
+    </script>
     {# djlint:on #}
 {% endblock %}
