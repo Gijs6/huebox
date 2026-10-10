@@ -18,24 +18,6 @@ function contrastRatio(a, b) {
     return (lighter + 0.05) / (darker + 0.05);
 }
 
-function removeIcon() {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "icon");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", "currentColor");
-    svg.setAttribute("stroke-width", "2");
-    svg.setAttribute("stroke-linecap", "round");
-    svg.setAttribute("stroke-linejoin", "round");
-    svg.setAttribute("aria-hidden", "true");
-    for (const definition of ["M18 6 6 18", "m6 6 12 12"]) {
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", definition);
-        svg.appendChild(path);
-    }
-    return svg;
-}
-
 function randomHex() {
     return (
         "#" +
@@ -258,8 +240,8 @@ function createSlot(hex) {
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "color-slot__remove";
-    remove.setAttribute("aria-label", "Remove color");
-    remove.appendChild(removeIcon());
+    remove.setAttribute("aria-label", "Remove colour");
+    remove.textContent = "\u00d7";
 
     swatch.append(input, remove);
 
@@ -404,7 +386,7 @@ function buildContrastTable() {
     const labels = [...palette, "Black", "White"];
 
     const table = document.createElement("table");
-    table.className = "contrast-table";
+    table.className = "table contrast-table";
 
     const head = document.createElement("thead");
     const headRow = document.createElement("tr");

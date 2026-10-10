@@ -1,21 +1,13 @@
 {% extends "base.jinja" %}
 
-{% from "_macros.jinja" import icon %}
-
-{% block title %}
-    {% if palette %}
-        {{ palette.name }}
-    {% else %}
-        New palette
-    {% endif %}
-{% endblock %}
+{% block title %}{{ palette.name if palette else "New palette" }}{% endblock %}
 
 {% block extra_headers %}
     <script src="{{ url_for('static', filename='scripts/copy-text.js') }}" defer></script>
     <script src="{{ url_for('static', filename='scripts/editor.js') }}" defer></script>
 {% endblock %}
 
-{% block main %}
+{% block content %}
     <div class="page-head">
         <h1>
             {% if palette %}
@@ -30,29 +22,29 @@
           id="paletteEditor"
           method="post"
           {% if palette %}hx-put="{{ url_for('submit_palette', id=palette.id) }}"{% else %}action="{{ url_for('submit_new') }}"{% endif %}>
-        <div class="editor__header">
+        <div class="field">
+            <label class="field__label" for="paletteName">Name</label>
             <input type="text"
                    class="editor__name"
+                   id="paletteName"
                    name="name"
                    placeholder="Palette name"
-                   aria-label="Palette name"
                    {% if palette %}value="{{ palette.name }}"{% endif %}
                    required />
-
-            <div class="editor__visibility">
-                <label class="switch">
-                    <input type="checkbox"
-                           class="editor__visibility-input"
-                           name="is_public"
-                           id="isPublic"
-                           {% if palette and palette.is_public %}checked{% endif %} />
-                    <span class="switch__track"></span>
-                </label>
-                <label class="editor__visibility-label" for="isPublic">Public palette</label>
-                <span class="editor__visibility-hint" id="visibilityHint"></span>
-            </div>
         </div>
 
+        <div class="field editor__visibility">
+            <label class="checkbox">
+                <input type="checkbox"
+                       name="is_public"
+                       id="isPublic"
+                       {% if palette and palette.is_public %}checked{% endif %} />
+                Public palette
+            </label>
+            <span class="field__hint" id="visibilityHint"></span>
+        </div>
+
+        <p class="field__label">Colours</p>
         <ul class="color-slot-list" id="colorList">
             {% if palette %}
                 {% for color in palette.colors %}
@@ -64,58 +56,49 @@
                                    class="color-slot__input"
                                    name="colors"
                                    value="{{ color.hex_value }}" />
-                            <button type="button" class="color-slot__remove" aria-label="Remove color">{{ icon("x") }}</button>
+                            <button type="button" class="color-slot__remove" aria-label="Remove colour">&times;</button>
                         </span>
                         <button type="button" class="color-slot__hex" aria-label="Copy hex value">{{ color.hex_value }}</button>
                     </li>
                 {% endfor %}
             {% endif %}
         </ul>
+        <p class="field__hint">Click a colour to change it, drag to reorder, click the hex value to copy it.</p>
     </form>
 
-    <div class="toolbar toolbar--plain editor__actions">
-        <button type="button" class="button button--ghost" id="addColorButton">{{ icon("plus") }} Add</button>
-        <button type="submit" form="paletteEditor" class="button">Save</button>
-
-        <div class="toolbar__separator"></div>
-        <button type="button" class="button button--ghost" id="contrastButton">Contrast</button>
-
+    <div class="form__actions editor__actions">
+        <button type="button" class="btn" id="addColorButton">Add colour</button>
+        <button type="submit" form="paletteEditor" class="btn">Save palette</button>
+        <button type="button" class="btn" id="contrastButton">Contrast</button>
         {% if palette %}
-            <div class="toolbar__separator"></div>
-            <button type="button" class="button button--ghost" id="copyCssButton">Copy CSS</button>
-            <button type="button" class="button button--ghost" id="copyJsonButton">Copy JSON</button>
-
-            <div class="toolbar__separator"></div>
+            <button type="button" class="btn" id="copyCssButton">Copy CSS</button>
+            <button type="button" class="btn" id="copyJsonButton">Copy JSON</button>
             <button type="button"
-                    class="button button--ghost"
+                    class="btn"
                     hx-post="{{ url_for('duplicate_palette', id=palette.id) }}"
                     hx-swap="none">Duplicate</button>
             {% if palette.is_public %}
                 <a href="{{ url_for('view_palette', id=palette.id) }}"
-                   class="button button--ghost"
+                   class="btn"
                    target="_blank"
-                   rel="noopener">{{ icon("external-link") }} View</a>
+                   rel="noopener">View</a>
             {% endif %}
+            <button type="button"
+                    class="btn btn--danger"
+                    hx-delete="{{ url_for('delete_palette', id=palette.id) }}"
+                    hx-confirm="Delete {{ palette.name }}?"
+                    hx-swap="none">Delete palette</button>
         {% endif %}
     </div>
 
-    <div class="contrast-panel" id="contrastPanel" hidden>
-        <div class="contrast-panel__inner" id="contrastInner"></div>
-    </div>
-
-    {% if palette %}
-        <div class="editor__danger">
-            <button type="button"
-                    class="button button--danger button--ghost"
-                    hx-delete="{{ url_for('delete_palette', id=palette.id) }}"
-                    hx-confirm="Delete {{ palette.name }}?"
-                    hx-swap="none">{{ icon("trash-2") }} Delete palette</button>
-        </div>
-    {% endif %}
+    <section class="panel contrast-panel" id="contrastPanel" hidden>
+        <h2 class="panel__heading">Contrast</h2>
+        <div class="table-wrap" id="contrastInner"></div>
+    </section>
 
     {# djlint:off #}
     <script>
         const isNewPalette = {{ (not palette) | tojson }};
-</script>
+    </script>
     {# djlint:on #}
 {% endblock %}
