@@ -1,14 +1,14 @@
 {% extends "base.jinja" %}
 
-{% from "_macros.jinja" import icon, swatches, color_count %}
+{% from "_macros.jinja" import swatches, color_count %}
 
-{% block title %}Palettes{% endblock %}
+{% block title %}Your palettes{% endblock %}
 
-{% block main %}
+{% block content %}
     <div class="page-head">
         <h1>Your palettes</h1>
         <div class="page-head__actions">
-            <a href="{{ url_for('new') }}" class="button">{{ icon("plus") }} New palette</a>
+            <a href="{{ url_for('new') }}" class="btn">New palette</a>
         </div>
     </div>
 
@@ -17,26 +17,24 @@
             {% for palette in palettes %}
                 <li class="palette-card">
                     <a class="palette-card__preview"
-                       href="{{ url_for('view_palette', id=palette.id) }}">{{ swatches(palette.colors) }}</a>
+                       href="{{ url_for('view_palette', id=palette.id) }}"
+                       tabindex="-1"
+                       aria-hidden="true">{{ swatches(palette.colors) }}</a>
                     <div class="palette-card__body">
                         <a class="palette-card__name"
                            href="{{ url_for('view_palette', id=palette.id) }}">{{ palette.name }}</a>
-                        <div class="palette-card__meta">
-                            <span>{{ color_count(palette.colors) }}</span>
-                            {% if palette.is_public %}<span class="badge badge--accent">{{ icon("globe") }} Public</span>{% endif %}
-                        </div>
+                        <p class="palette-card__meta">
+                            {{ color_count(palette.colors) }}
+                            {%- if palette.is_public %}, <span class="status status--ok">Public</span>{% endif %}
+                        </p>
                     </div>
                 </li>
             {% endfor %}
         </ul>
     {% else %}
-        <div class="empty empty--framed">
-            {{ icon('swatch-book', 'empty__icon') }}
+        <div class="empty">
             <p class="empty__title">No palettes yet</p>
-            <p class="empty__text">Build your first palette and it will show up here.</p>
-            <div class="empty__actions">
-                <a href="{{ url_for('new') }}" class="button">{{ icon("plus") }} New palette</a>
-            </div>
+            <p>Build your first palette and it will show up here.</p>
         </div>
     {% endif %}
 {% endblock %}

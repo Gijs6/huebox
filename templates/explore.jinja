@@ -1,61 +1,53 @@
 {% extends "base.jinja" %}
 
-{% from "_macros.jinja" import icon, swatches, color_count %}
+{% from "_macros.jinja" import swatches, color_count, owner %}
 
 {% block title %}Explore{% endblock %}
 
-{% block main %}
+{% block content %}
     <div class="page-head">
         <h1>Explore</h1>
-        {% if palettes %}<span class="page-head__count">{{ palettes | length }} palette{{ 's' if palettes | length != 1 }}</span>{% endif %}
     </div>
 
     {% if palettes %}
-        <ul class="palette-grid">
-            {% for palette in palettes %}
-                <li class="palette-card">
-                    <a class="palette-card__preview"
-                       href="{{ url_for('view_palette', id=palette.id) }}">{{ swatches(palette.colors) }}</a>
-                    <div class="palette-card__body">
-                        <a class="palette-card__name"
-                           href="{{ url_for('view_palette', id=palette.id) }}">{{ palette.name }}</a>
-                        <div class="palette-card__meta">
-                            <span class="avatar-label">
-                                {% if palette.owner.avatar_url %}
-                                    <img src="{{ palette.owner.avatar_url }}"
-                                         alt=""
-                                         class="avatar avatar--sm avatar--round" />
+        <section class="panel">
+            <h2 class="panel__heading">Public palettes ({{ palettes | length }})</h2>
+            <ul class="palette-grid">
+                {% for palette in palettes %}
+                    <li class="palette-card">
+                        <a class="palette-card__preview"
+                           href="{{ url_for('view_palette', id=palette.id) }}"
+                           tabindex="-1"
+                           aria-hidden="true">{{ swatches(palette.colors) }}</a>
+                        <div class="palette-card__body">
+                            <a class="palette-card__name"
+                               href="{{ url_for('view_palette', id=palette.id) }}">{{ palette.name }}</a>
+                            <p class="palette-card__meta">{{ owner(palette.owner) }}, {{ color_count(palette.colors) }}</p>
+                            <div class="form__actions">
+                                {% if current_user and current_user.id != palette.user_id %}
+                                    <button type="button"
+                                            class="btn btn--sm"
+                                            hx-post="{{ url_for('toggle_like', id=palette.id) }}"
+                                            hx-swap="none">
+                                        {{ "Unlike" if palette.id in liked_ids else "Like" }} ({{ palette.like_count }})
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn--sm"
+                                            hx-post="{{ url_for('fork_palette', id=palette.id) }}"
+                                            hx-swap="none">Fork</button>
+                                {% else %}
+                                    <span class="muted">{{ palette.like_count }} like{{ 's' if palette.like_count != 1 }}</span>
                                 {% endif %}
-                                <span class="avatar-label__name">{{ palette.owner.login }}</span>
-                            </span>
-                            <span>{{ color_count(palette.colors) }}</span>
+                            </div>
                         </div>
-                        <div class="palette-card__actions">
-                            {% if current_user and current_user.id != palette.user_id %}
-                                <button type="button"
-                                        class="button button--ghost button--sm"
-                                        hx-post="{{ url_for('fork_palette', id=palette.id) }}"
-                                        hx-swap="none">Fork</button>
-                                <button type="button"
-                                        class="button button--ghost button--sm like-button {% if palette.id in liked_ids %}is-liked{% endif %}"
-                                        hx-post="{{ url_for('toggle_like', id=palette.id) }}"
-                                        hx-swap="none"
-                                        aria-pressed="{{ 'true' if palette.id in liked_ids else 'false' }}">
-                                    {{ icon("heart") }} <span>{{ palette.like_count }}</span>
-                                </button>
-                            {% else %}
-                                <span class="like-count">{{ icon("heart") }} {{ palette.like_count }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
     {% else %}
-        <div class="empty empty--framed">
-            {{ icon('swatch-book', 'empty__icon') }}
+        <div class="empty">
             <p class="empty__title">No public palettes yet</p>
-            <p class="empty__text">
+            <p>
                 {% if current_user %}
                     Make one of your palettes public and it will be featured here.
                 {% else %}
