@@ -377,7 +377,7 @@ function buildContrastTable() {
     if (!palette.length) {
         const message = document.createElement("p");
         message.className = "contrast-empty";
-        message.textContent = "No colors yet.";
+        message.textContent = "No colours yet.";
         contrastInner.appendChild(message);
         return;
     }
@@ -474,7 +474,7 @@ const isPublicInput = document.getElementById("isPublic");
 const visibilityHint = document.getElementById("visibilityHint");
 
 function updateVisibility() {
-    visibilityHint.textContent = isPublicInput.checked ? "Anyone can view and fork this palette" : "Only you can see this palette";
+    visibilityHint.textContent = isPublicInput.checked ? "Anyone can view and fork this palette" : "Only you can view this palette";
 }
 
 updateVisibility();
