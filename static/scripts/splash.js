@@ -135,7 +135,7 @@ function drawChip(chip) {
     context.rotate(chip.rotation);
     context.fillStyle = chip.color;
     context.beginPath();
-    context.roundRect(-chip.size / 2, -chip.size / 2, chip.size, chip.size, chip.size * 0.2);
+    context.rect(-chip.size / 2, -chip.size / 2, chip.size, chip.size);
     context.fill();
     context.restore();
 }

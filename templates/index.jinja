@@ -1,8 +1,6 @@
 {% extends "skeleton.jinja" %}
 
-{% from "_macros.jinja" import icon %}
-
-{% block title %}Huebox{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block body_class %}splash{% endblock %}
 
@@ -18,12 +16,12 @@
 
         <div class="splash__actions">
             {% if current_user %}
-                <a href="{{ url_for('list') }}" class="button button--lg">My palettes</a>
+                <a href="{{ url_for('list') }}" class="btn">Your palettes</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="button button--lg">{{ icon("log-in") }} Sign in with GitHub</a>
+                <a href="{{ url_for('login') }}" class="btn">Sign in with GitHub</a>
             {% endif %}
             <a href="{{ url_for('explore') }}"
-               class="button button--lg button--ghost">Explore</a>
+               class="btn">Explore</a>
         </div>
     </div>
 {% endblock %}
