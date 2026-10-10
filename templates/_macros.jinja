@@ -8,9 +8,11 @@
     {{ colors | length }} colour{{ 's' if colors | length != 1 }}
 {%- endmacro %}
 
+{# djlint:off #}
 {% macro owner(user) -%}
     <span class="owner">
-        {% if user.avatar_url %}<img src="{{ user.avatar_url }}" alt="" class="avatar" />{% endif %}
-        {{ user.login }}
+        {%- if user.avatar_url %}<img src="{{ user.avatar_url }}" alt="" class="avatar" /> {% endif -%}
+        {{ user.login -}}
     </span>
 {%- endmacro %}
+{# djlint:on #}
