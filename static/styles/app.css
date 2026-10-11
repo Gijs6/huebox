@@ -207,6 +207,16 @@
     border: 1px solid var(--rule);
 }
 
+.color-slot-list:not(:has(.color-slot)) {
+    place-items: center;
+
+    &::before {
+        content: "No colours yet";
+        font-size: 15px;
+        font-weight: 700;
+    }
+}
+
 .color-slot {
     display: flex;
     flex-direction: column;
