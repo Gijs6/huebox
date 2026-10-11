@@ -441,6 +441,7 @@ rebuildContrast = () => {
 
 contrastButton.addEventListener("click", () => {
     contrastPanel.hidden = !contrastPanel.hidden;
+    contrastButton.setAttribute("aria-expanded", String(!contrastPanel.hidden));
     if (!contrastPanel.hidden) buildContrastTable();
 });
 
