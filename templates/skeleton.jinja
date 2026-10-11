@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
         <title>{%- block title -%}{%- endblock %} - Huebox</title>
+        <meta name="description" content="Make, share and fork colour palettes." />
+        <meta name="theme-color"
+              content="#3b5bdb"
+              media="(prefers-color-scheme: light)" />
+        <meta name="theme-color"
+              content="#3451c7"
+              media="(prefers-color-scheme: dark)" />
 
         <link rel="icon"
               href="{{ url_for('static', filename='favicon.svg') }}"
               type="image/svg+xml" />
         <link rel="alternate icon"
               href="{{ url_for('static', filename='favicon.ico') }}" />
-
-        <link rel="license" href="https://unlicense.org/" />
-        <link rel="robots" href="/robots.txt" />
-        <link rel="security" href="/.well-known/security.txt" />
 
         {% set theme = "http://localhost:8000/theme/v2" if config.DEBUG else "https://cdn.gijs6.nl/theme/v2" %}
         <link rel="stylesheet" href="{{ theme }}/all.css" />
