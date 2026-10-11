@@ -79,12 +79,12 @@
             <button type="button"
                     class="btn"
                     hx-post="{{ url_for('duplicate_palette', id=palette.id) }}"
-                    hx-swap="none">Duplicate</button>
+                    hx-swap="none">Duplicate palette</button>
             {% if palette.is_public %}
                 <a href="{{ url_for('view_palette', id=palette.id) }}"
                    class="btn"
                    target="_blank"
-                   rel="noopener">View</a>
+                   rel="noopener noreferrer">View palette</a>
             {% endif %}
             <button type="button"
                     class="btn btn--danger"

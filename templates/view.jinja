@@ -45,9 +45,9 @@
             <button type="button"
                     class="btn"
                     hx-post="{{ url_for('fork_palette', id=palette.id) }}"
-                    hx-swap="none">Fork</button>
+                    hx-swap="none">Fork palette</button>
         {% elif current_user and current_user.id == palette.user_id %}
-            <a href="{{ url_for('edit_palette', id=palette.id) }}" class="btn">Edit</a>
+            <a href="{{ url_for('edit_palette', id=palette.id) }}" class="btn">Edit palette</a>
         {% else %}
             <a href="{{ url_for('login') }}" class="btn">Sign in to fork</a>
         {% endif %}
