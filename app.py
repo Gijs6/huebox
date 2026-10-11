@@ -17,6 +17,8 @@ from authlib.integrations.flask_client import OAuth
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from models import db, User, Palette, Color, Like
+from utils.toasts import register_toasts
+from utils.version import register_version
 
 load_dotenv(override=True)
 
@@ -28,6 +30,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DB_URI", "sqlite:///huebox.db
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+register_toasts(app)
+register_version(app, "paint")
 
 oauth = OAuth(app)
 github = oauth.register(
@@ -61,14 +65,20 @@ with app.app_context():
 
 
 @app.before_request
-def auto_login_in_debug():
-    if not app.debug or "user_id" in session or session.get("dev_logged_out"):
+def dev_sign_in():
+    if not app.debug or "user_id" in session or session.get("dev_signed_out"):
         return
+    sign_in_dev_user()
+
+
+def sign_in_dev_user():
     dev_user = User.query.filter_by(github_id=0).first()
     if dev_user is None:
-        dev_user = User(github_id=0, login="devuser", avatar_url=None)
+        dev_user = User(github_id=0, login="dev", avatar_url=None)
         db.session.add(dev_user)
-        db.session.commit()
+    dev_user.login = "dev"
+    db.session.commit()
+    session.clear()
     session["user_id"] = dev_user.id
 
 
@@ -105,7 +115,7 @@ def inject_user():
 @app.get("/login")
 def login():
     if app.debug:
-        session.pop("dev_logged_out", None)
+        sign_in_dev_user()
         return redirect(url_for("list"))
     callback = url_for("auth_callback", _external=True)
     return github.authorize_redirect(callback)
@@ -138,7 +148,7 @@ def auth_callback():
 def logout():
     session.clear()
     if app.debug:
-        session["dev_logged_out"] = True
+        session["dev_signed_out"] = True
     return smart_redirect(url_for("index"))
 
 
@@ -212,6 +222,7 @@ def submit_new():
         )
 
     db.session.commit()
+    flash("Palette saved.", "success")
     return redirect(url_for("view_palette", id=palette.id))
 
 
@@ -247,8 +258,10 @@ def submit_palette(id):
 def delete_palette(id):
     user = current_user()
     p = Palette.query.filter_by(id=id, user_id=user.id).first_or_404()
+    name = p.name
     db.session.delete(p)
     db.session.commit()
+    flash(f"Deleted {name}.", "success")
     return smart_redirect(url_for("list"))
 
 
@@ -270,6 +283,7 @@ def duplicate_palette(id):
         )
 
     db.session.commit()
+    flash(f"Duplicated {source.name}.", "success")
     return smart_redirect(url_for("view_palette", id=copy.id))
 
 
@@ -291,7 +305,7 @@ def fork_palette(id):
         )
 
     db.session.commit()
-    flash(f'Forked "{source.name}" to your palettes.', "success")
+    flash(f"Forked {source.name} to your palettes.", "success")
     return smart_redirect(url_for("view_palette", id=fork.id))
 
 
@@ -303,8 +317,10 @@ def toggle_like(id):
     existing = Like.query.filter_by(user_id=user.id, palette_id=id).first()
     if existing:
         db.session.delete(existing)
+        flash(f"Unliked {p.name}.", "success")
     else:
         db.session.add(Like(user_id=user.id, palette_id=id))
+        flash(f"Liked {p.name}.", "success")
     db.session.commit()
     return smart_redirect(request.referrer or url_for("view_palette", id=id))
 
