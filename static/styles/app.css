@@ -350,10 +350,6 @@
     font-family: var(--mono);
 }
 
-.contrast-empty {
-    color: var(--muted);
-}
-
 .contrast-table {
     th,
     td {

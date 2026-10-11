@@ -375,10 +375,13 @@ function buildContrastTable() {
     contrastInner.textContent = "";
 
     if (!palette.length) {
-        const message = document.createElement("p");
-        message.className = "contrast-empty";
-        message.textContent = "No colours yet.";
-        contrastInner.appendChild(message);
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        const title = document.createElement("p");
+        title.className = "empty__title";
+        title.textContent = "No colours yet";
+        empty.appendChild(title);
+        contrastInner.appendChild(empty);
         return;
     }
 
@@ -426,7 +429,10 @@ function buildContrastTable() {
         body.appendChild(tableRow);
     }
     table.appendChild(body);
-    contrastInner.appendChild(table);
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrap";
+    wrap.appendChild(table);
+    contrastInner.appendChild(wrap);
 }
 
 rebuildContrast = () => {
