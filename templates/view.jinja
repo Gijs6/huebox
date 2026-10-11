@@ -16,6 +16,7 @@
 
     <p class="palette-meta">
         {{ owner(palette.owner) }}, {{ color_count(palette.colors) }},
+        {% if not (current_user and current_user.id != palette.user_id) %}{{ palette.like_count }} like{{ 's' if palette.like_count != 1 }},{% endif %}
         {% if palette.is_public %}
             <span class="status status--ok">Public</span>
         {% else %}
@@ -54,10 +55,6 @@
         <button type="button" class="btn" id="copyCssButton">Copy CSS</button>
         <button type="button" class="btn" id="copyJsonButton">Copy JSON</button>
     </div>
-
-    {% if not (current_user and current_user.id != palette.user_id) %}
-        <p class="muted">{{ palette.like_count }} like{{ 's' if palette.like_count != 1 }}</p>
-    {% endif %}
 
     {# djlint:off #}
     <script>

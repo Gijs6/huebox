@@ -22,9 +22,12 @@
                         <div class="palette-card__body">
                             <a class="palette-card__name"
                                href="{{ url_for('view_palette', id=palette.id) }}">{{ palette.name }}</a>
-                            <p class="palette-card__meta">{{ owner(palette.owner) }}, {{ color_count(palette.colors) }}</p>
-                            <div class="form__actions">
-                                {% if current_user and current_user.id != palette.user_id %}
+                            <p class="palette-card__meta">
+                                {{ owner(palette.owner) }}, {{ color_count(palette.colors) }}
+                                {%- if not (current_user and current_user.id != palette.user_id) %}, {{ palette.like_count }} like{{ 's' if palette.like_count != 1 }}{% endif %}
+                            </p>
+                            {% if current_user and current_user.id != palette.user_id %}
+                                <div class="form__actions">
                                     <button type="button"
                                             class="btn btn--sm"
                                             hx-post="{{ url_for('toggle_like', id=palette.id) }}"
@@ -33,10 +36,8 @@
                                             class="btn btn--sm"
                                             hx-post="{{ url_for('fork_palette', id=palette.id) }}"
                                             hx-swap="none">Fork</button>
-                                {% else %}
-                                    <span class="muted">{{ palette.like_count }} like{{ 's' if palette.like_count != 1 }}</span>
-                                {% endif %}
-                            </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </li>
                 {% endfor %}
