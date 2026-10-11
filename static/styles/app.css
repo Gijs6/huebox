@@ -23,6 +23,11 @@
     vertical-align: text-bottom;
 }
 
+html:has(.splash) {
+    scrollbar-gutter: auto;
+    overflow: hidden;
+}
+
 .splash {
     position: relative;
     display: flex;
