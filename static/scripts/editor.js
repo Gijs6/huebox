@@ -403,7 +403,9 @@ function buildContrastTable() {
     const body = document.createElement("tbody");
     for (let row = 0; row < columns.length; row++) {
         const tableRow = document.createElement("tr");
-        tableRow.appendChild(contrastHeader(columns[row], labels[row]));
+        const rowHeader = contrastHeader(columns[row], labels[row]);
+        rowHeader.scope = "row";
+        tableRow.appendChild(rowHeader);
 
         for (let column = 0; column < columns.length; column++) {
             const cell = document.createElement("td");
