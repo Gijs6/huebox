@@ -9,13 +9,7 @@
 
 {% block content %}
     <div class="page-head">
-        <h1>
-            {% if palette %}
-                Edit palette
-            {% else %}
-                New palette
-            {% endif %}
-        </h1>
+        <h1>{{ "Edit palette" if palette else "New palette" }}</h1>
     </div>
 
     <form class="editor"
