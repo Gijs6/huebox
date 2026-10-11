@@ -19,14 +19,14 @@
     </div>
 
     <form class="editor"
-          id="paletteEditor"
+          id="palette-editor"
           method="post"
           {% if palette %}hx-put="{{ url_for('submit_palette', id=palette.id) }}"{% else %}action="{{ url_for('submit_new') }}"{% endif %}>
         <div class="field">
-            <label class="field__label" for="paletteName">Name</label>
+            <label class="field__label" for="palette-name">Name</label>
             <input type="text"
                    class="editor__name"
-                   id="paletteName"
+                   id="palette-name"
                    name="name"
                    placeholder="Palette name"
                    {% if palette %}value="{{ palette.name }}"{% endif %}
@@ -37,15 +37,15 @@
             <label class="checkbox">
                 <input type="checkbox"
                        name="is_public"
-                       id="isPublic"
+                       id="is-public"
                        {% if palette and palette.is_public %}checked{% endif %} />
                 Public palette
             </label>
-            <span class="field__hint" id="visibilityHint"></span>
+            <span class="field__hint" id="visibility-hint"></span>
         </div>
 
         <p class="field__label">Colours</p>
-        <ul class="color-slot-list" id="colorList">
+        <ul class="color-slot-list" id="color-list">
             {% if palette %}
                 {% for color in palette.colors %}
                     <li class="color-slot"
@@ -66,12 +66,16 @@
     </form>
 
     <div class="form__actions editor__actions">
-        <button type="button" class="btn" id="addColorButton">Add colour</button>
-        <button type="submit" form="paletteEditor" class="btn">Save palette</button>
-        <button type="button" class="btn" id="contrastButton">Contrast</button>
+        <button type="button" class="btn" id="add-color-button">Add colour</button>
+        <button type="submit" form="palette-editor" class="btn">Save palette</button>
+        <button type="button"
+                class="btn"
+                id="contrast-button"
+                aria-controls="contrast-panel"
+                aria-expanded="false">Check contrast</button>
         {% if palette %}
-            <button type="button" class="btn" id="copyCssButton">Copy CSS</button>
-            <button type="button" class="btn" id="copyJsonButton">Copy JSON</button>
+            <button type="button" class="btn" id="copy-css-button">Copy CSS</button>
+            <button type="button" class="btn" id="copy-json-button">Copy JSON</button>
             <button type="button"
                     class="btn"
                     hx-post="{{ url_for('duplicate_palette', id=palette.id) }}"
@@ -90,9 +94,9 @@
         {% endif %}
     </div>
 
-    <section class="panel contrast-panel" id="contrastPanel" hidden>
+    <section class="panel contrast-panel" id="contrast-panel" hidden>
         <h2 class="panel__heading">Contrast</h2>
-        <div class="table-wrap" id="contrastInner"></div>
+        <div id="contrast-inner"></div>
     </section>
 
     {# djlint:off #}

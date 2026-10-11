@@ -1,5 +1,5 @@
-const addColorButton = document.getElementById("addColorButton");
-const list = document.getElementById("colorList");
+const addColorButton = document.getElementById("add-color-button");
+const list = document.getElementById("color-list");
 const nameInput = document.querySelector(".editor__name");
 
 let saveDraft = () => {};
@@ -337,8 +337,8 @@ function slugify(name) {
         .replace(/[^a-z0-9-]/g, "");
 }
 
-const copyCssButton = document.getElementById("copyCssButton");
-const copyJsonButton = document.getElementById("copyJsonButton");
+const copyCssButton = document.getElementById("copy-css-button");
+const copyJsonButton = document.getElementById("copy-json-button");
 
 copyCssButton?.addEventListener("click", async () => {
     const slug = slugify(getPaletteName());
@@ -353,9 +353,9 @@ copyJsonButton?.addEventListener("click", async () => {
     if (await copyText(JSON.stringify(payload, null, 2))) window.toast("JSON copied.", { type: "success" });
 });
 
-const contrastButton = document.getElementById("contrastButton");
-const contrastPanel = document.getElementById("contrastPanel");
-const contrastInner = document.getElementById("contrastInner");
+const contrastButton = document.getElementById("contrast-button");
+const contrastPanel = document.getElementById("contrast-panel");
+const contrastInner = document.getElementById("contrast-inner");
 const badgeText = { aaa: "AAA", aa: "AA", large: "AA large", fail: "fail" };
 
 function contrastHeader(color, label) {
@@ -465,13 +465,13 @@ if (isNewPalette) {
     }
 
     nameInput.addEventListener("input", saveDraft);
-    document.getElementById("paletteEditor").addEventListener("submit", () => {
+    document.getElementById("palette-editor").addEventListener("submit", () => {
         localStorage.removeItem(draftKey);
     });
 }
 
-const isPublicInput = document.getElementById("isPublic");
-const visibilityHint = document.getElementById("visibilityHint");
+const isPublicInput = document.getElementById("is-public");
+const visibilityHint = document.getElementById("visibility-hint");
 
 function updateVisibility() {
     visibilityHint.textContent = isPublicInput.checked ? "Anyone can view and fork this palette" : "Only you can view this palette";

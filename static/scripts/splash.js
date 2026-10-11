@@ -1,4 +1,4 @@
-const canvas = document.getElementById("splashCanvas");
+const canvas = document.getElementById("splash-canvas");
 const context = canvas.getContext("2d");
 let chips = [];
 let mouse = { x: -9999, y: -9999 };
