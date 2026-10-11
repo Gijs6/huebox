@@ -79,8 +79,8 @@
     font-family: var(--mono);
     font-size: 12px;
     white-space: nowrap;
-    color: #ffffff;
-    background: #000000;
+    color: var(--tooltip-fg);
+    background: var(--tooltip-bg);
     opacity: 0.9;
     pointer-events: none;
 }
@@ -176,8 +176,8 @@
     font-family: var(--mono);
     font-size: 12px;
     white-space: nowrap;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.7);
+    color: var(--on-scrim);
+    background: var(--scrim);
 }
 
 .palette-actions {
@@ -253,13 +253,13 @@
     padding: 0;
     font-size: 16px;
     line-height: 1;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.7);
+    color: var(--on-scrim);
+    background: var(--scrim);
     border: 0;
     cursor: pointer;
 
     &:hover {
-        background: #000000;
+        background: var(--black);
     }
 }
 
@@ -315,8 +315,8 @@
     position: absolute;
     inline-size: 10px;
     block-size: 10px;
-    border: 2px solid #ffffff;
-    outline: 1px solid #000000;
+    border: 2px solid var(--white);
+    outline: 1px solid var(--black);
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
@@ -334,14 +334,14 @@
         appearance: none;
         inline-size: 8px;
         block-size: 16px;
-        background: #ffffff;
-        border: 1px solid #000000;
+        background: var(--white);
+        border: 1px solid var(--black);
     }
     &::-moz-range-thumb {
         inline-size: 8px;
         block-size: 16px;
-        background: #ffffff;
-        border: 1px solid #000000;
+        background: var(--white);
+        border: 1px solid var(--black);
         border-radius: 0;
     }
 }
