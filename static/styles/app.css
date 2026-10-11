@@ -187,10 +187,6 @@
     margin-block-end: var(--space-xl);
 }
 
-.editor__name {
-    font-weight: 700;
-}
-
 .checkbox {
     display: inline-flex;
     align-items: center;
