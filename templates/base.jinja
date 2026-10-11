@@ -9,7 +9,7 @@
     <header class="navbar">
         <div class="navbar__inner">
             <a href="{{ url_for('index') }}" class="navbar__brand">{% include "mark.svg" %}Huebox</a>
-            <nav class="navbar__links" aria-label="Main navigation">
+            <nav class="navbar__links" aria-label="Main">
                 {{ nav_link('explore', 'Explore') }}
                 {% if current_user %}
                     {{ nav_link('list', 'Your palettes') }}
