@@ -82,7 +82,7 @@ html:has(.splash) {
     display: none;
     padding: var(--space-2xs) var(--space-sm);
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: var(--text-sm);
     white-space: nowrap;
     color: var(--tooltip-fg);
     background: var(--tooltip-bg);
@@ -151,11 +151,6 @@ html:has(.splash) {
     background: var(--color);
 }
 
-.palette-meta {
-    margin-block-end: var(--space-xl);
-    color: var(--muted);
-}
-
 .palette-strip {
     display: grid;
     grid-auto-flow: column;
@@ -179,25 +174,14 @@ html:has(.splash) {
 .palette-strip__hex {
     padding: var(--space-2xs) var(--space-xs);
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: var(--text-sm);
     white-space: nowrap;
     color: var(--on-scrim);
     background: var(--scrim);
 }
 
-.palette-actions {
-    margin-block-end: var(--space-md);
-}
-
 .editor {
     margin-block-end: var(--space-xl);
-}
-
-.checkbox {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    font-weight: 700;
 }
 
 .color-slot-list {
@@ -217,7 +201,7 @@ html:has(.splash) {
 
     &::before {
         content: "No colours yet";
-        font-size: 15px;
+        font-size: var(--text-lg);
         font-weight: 700;
     }
 }
@@ -256,7 +240,7 @@ html:has(.splash) {
     inline-size: 22px;
     block-size: 22px;
     padding: 0;
-    font-size: 16px;
+    font-size: var(--text-lg);
     line-height: 1;
     color: var(--on-scrim);
     background: var(--scrim);
@@ -272,7 +256,7 @@ html:has(.splash) {
     inline-size: 100%;
     padding: var(--space-xs) var(--space-2xs);
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: var(--text-sm);
     color: var(--link);
     text-decoration: underline;
     background: var(--page);
@@ -281,7 +265,7 @@ html:has(.splash) {
     cursor: pointer;
 
     &:hover {
-        background: var(--head);
+        background: var(--btn-hover);
     }
 }
 
@@ -374,7 +358,7 @@ html:has(.splash) {
 
 .contrast-label {
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: var(--text-sm);
     font-weight: 400;
 }
 
