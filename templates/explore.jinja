@@ -11,7 +11,9 @@
 
     {% if palettes %}
         <section class="panel">
-            <h2 class="panel__heading">Public palettes ({{ palettes | length }})</h2>
+            <h2 class="panel__heading">
+                <span>Public palettes <span class="count">{{ "{:,}".format(palettes | length) }}</span></span>
+            </h2>
             <ul class="palette-grid">
                 {% for palette in palettes %}
                     <li class="palette-card">
@@ -31,7 +33,7 @@
                                     <button type="button"
                                             class="btn btn--sm"
                                             hx-post="{{ url_for('toggle_like', id=palette.id) }}"
-                                            hx-swap="none">{{ "Unlike" if palette.id in liked_ids else "Like" }} ({{ palette.like_count }})</button>
+                                            hx-swap="none">{{ "Unlike" if palette.id in liked_ids else "Like" }} <span class="count">{{ "{:,}".format(palette.like_count) }}</span></button>
                                     <button type="button"
                                             class="btn btn--sm"
                                             hx-post="{{ url_for('fork_palette', id=palette.id) }}"

@@ -11,18 +11,32 @@
 
 {% block content %}
     <div class="page-head">
-        <h1>{{ palette.name }}</h1>
+        <div>
+            <h1>
+                {{ palette.name }}
+                {% if palette.is_public %}
+                    <span class="status status--ok">(public)</span>
+                {% else %}
+                    <span class="status">(private)</span>
+                {% endif %}
+            </h1>
+        </div>
     </div>
 
-    <p class="palette-meta">
-        {{ owner(palette.owner) }}, {{ color_count(palette.colors) }},
-        {% if not (current_user and current_user.id != palette.user_id) %}{{ palette.like_count }} like{{ 's' if palette.like_count != 1 }},{% endif %}
-        {% if palette.is_public %}
-            <span class="status status--ok">Public</span>
-        {% else %}
-            <span class="status">Private</span>
-        {% endif %}
-    </p>
+    <div class="table-wrap">
+        <table class="table table--kv table--fit">
+            <caption class="visually-hidden">Details</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Owner</th>
+                    <td>{{ owner(palette.owner) }}</td>
+                    <th scope="row">Colours</th>
+                    <td>{{ "{:,}".format(palette.colors | length) }}</td>
+                    {% if not (current_user and current_user.id != palette.user_id) %}<th scope="row">Likes</th><td>{{ "{:,}".format(palette.like_count) }}</td>{% endif %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div class="palette-strip">
         {% for color in palette.colors %}
@@ -36,12 +50,12 @@
         {% endfor %}
     </div>
 
-    <div class="form__actions palette-actions">
+    <div class="page-actions">
         {% if current_user and current_user.id != palette.user_id %}
             <button type="button"
                     class="btn"
                     hx-post="{{ url_for('toggle_like', id=palette.id) }}"
-                    hx-swap="none">{{ "Unlike" if user_liked else "Like" }} ({{ palette.like_count }})</button>
+                    hx-swap="none">{{ "Unlike" if user_liked else "Like" }} <span class="count">{{ "{:,}".format(palette.like_count) }}</span></button>
             <button type="button"
                     class="btn"
                     hx-post="{{ url_for('fork_palette', id=palette.id) }}"
