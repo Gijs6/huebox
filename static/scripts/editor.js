@@ -478,13 +478,3 @@ if (isNewPalette) {
         localStorage.removeItem(draftKey);
     });
 }
-
-const isPublicInput = document.getElementById("is-public");
-const visibilityHint = document.getElementById("visibility-hint");
-
-function updateVisibility() {
-    visibilityHint.textContent = isPublicInput.checked ? "Anyone can view and fork this palette" : "Only you can view this palette";
-}
-
-updateVisibility();
-isPublicInput.addEventListener("change", updateVisibility);
