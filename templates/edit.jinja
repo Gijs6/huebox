@@ -50,6 +50,10 @@
                                    name="colors"
                                    value="{{ color.hex_value }}" />
                             <button type="button" class="color-slot__remove" aria-label="Remove colour">&times;</button>
+                            <span class="color-slot__moves">
+                                <button type="button" class="color-slot__move" data-move="-1" aria-label="Move left">←</button>
+                                <button type="button" class="color-slot__move" data-move="1" aria-label="Move right">→</button>
+                            </span>
                         </span>
                         <button type="button" class="color-slot__hex" aria-label="Copy hex value">{{ color.hex_value }}</button>
                     </li>
@@ -73,12 +77,10 @@
                     class="btn"
                     hx-post="{{ url_for('duplicate_palette', id=palette.id) }}"
                     hx-swap="none">Duplicate palette</button>
-            {% if palette.is_public %}
-                <a href="{{ url_for('view_palette', id=palette.id) }}"
-                   class="btn"
-                   target="_blank"
-                   rel="noopener noreferrer">View palette</a>
-            {% endif %}
+            <a href="{{ url_for('view_palette', id=palette.id) }}"
+               class="btn"
+               target="_blank"
+               rel="noopener noreferrer">View palette</a>
             <button type="button"
                     class="btn btn--danger"
                     hx-delete="{{ url_for('delete_palette', id=palette.id) }}"

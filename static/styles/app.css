@@ -252,6 +252,35 @@ html:has(.splash) {
     }
 }
 
+.color-slot__moves {
+    position: absolute;
+    inset-block-end: var(--space-2xs);
+    inset-inline: var(--space-2xs);
+    display: flex;
+    justify-content: space-between;
+}
+
+.color-slot__move {
+    inline-size: 22px;
+    block-size: 22px;
+    padding: 0;
+    font-size: var(--text);
+    line-height: 1;
+    color: var(--on-scrim);
+    background: var(--scrim);
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--black);
+    }
+}
+
+.color-slot:first-child .color-slot__move[data-move="-1"],
+.color-slot:last-child .color-slot__move[data-move="1"] {
+    visibility: hidden;
+}
+
 .color-slot__hex {
     inline-size: 100%;
     padding: var(--space-xs) var(--space-2xs);

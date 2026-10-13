@@ -243,7 +243,22 @@ function createSlot(hex) {
     remove.setAttribute("aria-label", "Remove colour");
     remove.textContent = "\u00d7";
 
-    swatch.append(input, remove);
+    const moves = document.createElement("span");
+    moves.className = "color-slot__moves";
+    for (const [step, arrow, label] of [
+        [-1, "\u2190", "Move left"],
+        [1, "\u2192", "Move right"]
+    ]) {
+        const move = document.createElement("button");
+        move.type = "button";
+        move.className = "color-slot__move";
+        move.dataset.move = String(step);
+        move.setAttribute("aria-label", label);
+        move.textContent = arrow;
+        moves.append(move);
+    }
+
+    swatch.append(input, remove, moves);
 
     const hexButton = document.createElement("button");
     hexButton.type = "button";
@@ -262,8 +277,20 @@ function wireSlot(item) {
     const swatch = item.querySelector(".color-slot__swatch");
 
     swatch.addEventListener("click", (event) => {
-        if (remove.contains(event.target)) return;
+        if (remove.contains(event.target) || event.target.closest(".color-slot__move")) return;
         picker.open(item);
+    });
+
+    item.querySelectorAll(".color-slot__move").forEach((move) => {
+        move.addEventListener("click", () => {
+            const step = Number(move.dataset.move);
+            const target = step < 0 ? item.previousElementSibling : item.nextElementSibling;
+            if (!target) return;
+            list.insertBefore(item, step < 0 ? target : target.nextSibling);
+            move.focus();
+            saveDraft();
+            rebuildContrast();
+        });
     });
 
     hexButton.addEventListener("click", async () => {
