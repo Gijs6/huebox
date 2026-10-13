@@ -322,7 +322,11 @@ def toggle_like(id):
         db.session.add(Like(user_id=user.id, palette_id=id))
         flash(f"Liked {p.name}.", "success")
     db.session.commit()
-    return smart_redirect(request.referrer or url_for("view_palette", id=id))
+    return smart_redirect(
+        request.headers.get("HX-Current-URL")
+        or request.referrer
+        or url_for("view_palette", id=id)
+    )
 
 
 @app.errorhandler(404)
