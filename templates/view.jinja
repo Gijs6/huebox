@@ -52,10 +52,9 @@
 
     <div class="page-actions">
         {% if current_user and current_user.id != palette.user_id %}
-            <button type="button"
-                    class="btn"
-                    hx-post="{{ url_for('toggle_like', id=palette.id) }}"
-                    hx-swap="none">{{ "Unlike" if user_liked else "Like" }} <span class="count">{{ "{:,}".format(palette.like_count) }}</span></button>
+            {% with liked = user_liked, small = false %}
+                {% include "_like_button.jinja" %}
+            {% endwith %}
             <button type="button"
                     class="btn"
                     hx-post="{{ url_for('fork_palette', id=palette.id) }}"

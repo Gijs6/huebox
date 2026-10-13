@@ -30,10 +30,9 @@
                             </p>
                             {% if current_user and current_user.id != palette.user_id %}
                                 <div class="form__actions">
-                                    <button type="button"
-                                            class="btn btn--sm"
-                                            hx-post="{{ url_for('toggle_like', id=palette.id) }}"
-                                            hx-swap="none">{{ "Unlike" if palette.id in liked_ids else "Like" }} <span class="count">{{ "{:,}".format(palette.like_count) }}</span></button>
+                                    {% with liked = palette.id in liked_ids, small = true %}
+                                        {% include "_like_button.jinja" %}
+                                    {% endwith %}
                                     <button type="button"
                                             class="btn btn--sm"
                                             hx-post="{{ url_for('fork_palette', id=palette.id) }}"

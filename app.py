@@ -17,7 +17,7 @@ from authlib.integrations.flask_client import OAuth
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from models import db, User, Palette, Color, Like
-from utils.toasts import register_toasts
+from utils.toasts import htmx_redirect, register_toasts
 from utils.version import register_version
 
 load_dotenv(override=True)
@@ -101,7 +101,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if current_user() is None:
-            return redirect(url_for("index"))
+            return htmx_redirect(url_for("index"))
         return f(*args, **kwargs)
 
     return decorated
@@ -293,7 +293,7 @@ def fork_palette(id):
     source = Palette.query.filter_by(id=id, is_public=True).first_or_404()
     user = current_user()
 
-    fork = Palette(name=source.name, user_id=user.id, is_public=False)
+    fork = Palette(name=f"{source.name} (fork)", user_id=user.id, is_public=False)
     db.session.add(fork)
     db.session.flush()
 
@@ -322,6 +322,14 @@ def toggle_like(id):
         db.session.add(Like(user_id=user.id, palette_id=id))
         flash(f"Liked {p.name}.", "success")
     db.session.commit()
+    if request.headers.get("HX-Request"):
+        db.session.refresh(p)
+        return render_template(
+            "_like_button.jinja",
+            palette=p,
+            liked=existing is None,
+            small=bool(request.args.get("small")),
+        )
     return smart_redirect(
         request.headers.get("HX-Current-URL")
         or request.referrer

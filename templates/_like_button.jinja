@@ -1,0 +1,4 @@
+<button type="button"
+        class="btn{{ ' btn--sm' if small }}"
+        hx-post="{{ url_for('toggle_like', id=palette.id, small=1 if small else none) }}"
+        hx-swap="outerHTML">{{ "Unlike" if liked else "Like" }} <span class="count">{{ "{:,}".format(palette.like_count) }}</span></button>
